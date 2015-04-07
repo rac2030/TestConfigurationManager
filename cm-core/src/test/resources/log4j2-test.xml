@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyleft (c) 2014. This code is for learning purposes only. Do whatever you like with it but don't take it as perfect code.
+  -->
+
+<configuration status="error">
+    <!--The first definition of all appender-->
+    <appenders>
+        <!--The output console configuration-->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--The console output only level and above the level of the information (onMatch), directly to the other(onMismatch)-->
+            <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!--This all know is the output log format-->
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %class{36} %L %M [%t] - %msg%xEx%n"/>
+        </Console>
+        <!--Document will print out all the information, the log every time you run the program will automatically clear, determined by the append property, this is also very useful, suitable for temporary test-->
+        <File name="File" fileName="log/test.log" append="false">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %class{36} %L %M [%t] - %msg%xEx%n"/>
+        </File>
+
+    </appenders>
+    <!--Then the definition of logger, only the definition of logger and the introduction of the appender, the appender will take effect-->
+    <loggers>
+        <!--Create a default root logger-->
+        <root level="trace">
+            <appender-ref ref="File"/>
+            <appender-ref ref="Console"/>
+        </root>
+
+    </loggers>
+</configuration>
