@@ -19,15 +19,17 @@ public class ConfigModuleProvider implements Provider<ConfigProvider> {
     private final AggregatedResourceBundle testngParams;
     private final ConfigEnvironment env;
     private final Class testClass;
+    private final ConfigProvider parent;
 
-    public ConfigModuleProvider(ConfigEnvironment env, Class testClass, AggregatedResourceBundle testngParams) {
+    public ConfigModuleProvider(ConfigProvider parent, ConfigEnvironment env, Class testClass, AggregatedResourceBundle testngParams) {
+        this.parent = parent;
         this.env = env;
         this.testClass = testClass;
         this.testngParams = testngParams;
     }
 
     public ConfigProvider get() {
-        return new ConfigProvider(env, testClass, testngParams);
+        return new ConfigProvider(parent, env, testClass, testngParams);
     }
 
 

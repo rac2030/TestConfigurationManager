@@ -23,6 +23,7 @@ public class ConfigModule extends AbstractModule {
     private AggregatedResourceBundle testngParams;
     private ConfigEnvironment env;
     private Class testClass;
+    private ConfigProvider parent;
 
     public static final String ENVIRONMENT_NAME = "environment.name";
     public static final String ENVIRONMENT_DESCRIPTION = "environment.description";
@@ -47,10 +48,11 @@ public class ConfigModule extends AbstractModule {
      * @param env
      * @param testClass
      */
-    public ConfigModule(ConfigEnvironment env, Class<?> testClass, AggregatedResourceBundle params) {
+    public ConfigModule(ConfigProvider parent, ConfigEnvironment env, Class<?> testClass, AggregatedResourceBundle params) {
         this.env = env;
         this.testClass = testClass;
         testngParams = params;
+        this.parent = parent;
     }
 
     /**
@@ -80,6 +82,6 @@ public class ConfigModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(ConfigProvider.class).toProvider(new ConfigModuleProvider(env, testClass, testngParams));
+        bind(ConfigProvider.class).toProvider(new ConfigModuleProvider(parent, env, testClass, testngParams));
     }
 }

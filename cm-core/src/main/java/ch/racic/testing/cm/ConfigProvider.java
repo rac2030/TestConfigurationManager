@@ -29,6 +29,8 @@ public class ConfigProvider {
 
     private static final Logger log = LogManager.getLogger(ConfigProvider.class);
 
+    private ConfigProvider parentConfig;
+
     private ConfigEnvironment environment;
     private String clazz;
 
@@ -49,10 +51,11 @@ public class ConfigProvider {
     };
 
     public ConfigProvider(ConfigEnvironment environment, Class clazz) {
-        this(environment, clazz, null);
+        this(null, environment, clazz, null);
     }
 
-    public ConfigProvider(ConfigEnvironment environment, Class clazz, AggregatedResourceBundle testngParams) {
+    public ConfigProvider(ConfigProvider parent, ConfigEnvironment environment, Class clazz, AggregatedResourceBundle testngParams) {
+        this.parentConfig = parent;
         this.environment = environment;
         // Extract class name for loading if annotation present
         ClassConfig classConfig = (ClassConfig) clazz.getAnnotation(ClassConfig.class);
@@ -150,6 +153,10 @@ public class ConfigProvider {
     }
 
     public String get(String key, String defaultValue) {
+        if (parentConfig != null && parentConfig.contains(key)) {
+            log.debug("Retrieved property [" + key + "] from parent config");
+            return parentConfig.get(key);
+        }
         if (propsTestNG != null && propsTestNG.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from TestNG Parameters");
             return propsTestNG.getString(key);
@@ -169,6 +176,23 @@ public class ConfigProvider {
             log.warn("Property [" + key + "] has not been found, returning default value");
             return defaultValue;
         }
+    }
+
+    /**
+     * Check if the key is somewhere in the properties chain on all layers including parent.
+     *
+     * @param key
+     * @return
+     */
+    public boolean contains(String key) {
+        if (parentConfig.contains(key)) return true;
+        if (propsTestNG.containsKey(key)) return true;
+        if (propsEnvClass.containsKey(key)) return true;
+        if (propsGlobalClass.containsKey(key)) return true;
+        if (propsEnv.containsKey(key)) return true;
+        if (propsGlobal.containsKey(key)) return true;
+        // 404 no property found
+        return false;
     }
 
     /**
@@ -199,7 +223,7 @@ public class ConfigProvider {
      */
     public <T> T create(Class<T> type, Module... modules) {
         List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
-        mList.add(new ConfigModule(environment, type, propsTestNG));
+        mList.add(new ConfigModule(parentConfig, environment, type, propsTestNG));
         Injector injector = com.google.inject.Guice.createInjector(mList);
         return injector.getInstance(type);
     }
