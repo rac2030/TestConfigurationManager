@@ -6,6 +6,7 @@
 
 package ch.racic.testing.cm.guice;
 
+import ch.racic.testing.cm.AggregatedResourceBundle;
 import ch.racic.testing.cm.ConfigEnvironment;
 import ch.racic.testing.cm.ConfigProvider;
 import com.google.inject.Provider;
@@ -15,16 +16,18 @@ import com.google.inject.Provider;
  */
 public class ConfigModuleProvider implements Provider<ConfigProvider> {
 
-    private ConfigEnvironment env;
-    private Class testClass;
+    private final AggregatedResourceBundle testngParams;
+    private final ConfigEnvironment env;
+    private final Class testClass;
 
-    public ConfigModuleProvider(ConfigEnvironment env, Class testClass) {
+    public ConfigModuleProvider(ConfigEnvironment env, Class testClass, AggregatedResourceBundle testngParams) {
         this.env = env;
         this.testClass = testClass;
+        this.testngParams = testngParams;
     }
 
     public ConfigProvider get() {
-        return new ConfigProvider(env, testClass);
+        return new ConfigProvider(env, testClass, testngParams);
     }
 
 

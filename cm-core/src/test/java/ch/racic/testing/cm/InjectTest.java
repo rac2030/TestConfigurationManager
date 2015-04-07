@@ -42,7 +42,7 @@ public class InjectTest {
         Assert.assertEquals(cfg.get("config.test.env"), environmentCode, "config.test.env gets overwritten by env folder or taken from global if no environment is specified");
         Assert.assertEquals(cfg.get("config.test.global.class"), "SimpleTest.global", "config.test.global.class gets not overwritten");
         Assert.assertEquals(cfg.get("config.test.env.class"), "SimpleTest." + environmentCode, "config.test.env.class gets overwritten by env folder or taken from global if no environment is specified");
-
+        Assert.assertEquals(cfg.get("environment.code"), environmentCode, "Value from config is same as value directly from parameter injected by TestNG");
     }
 
     @Test

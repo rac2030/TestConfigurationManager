@@ -36,7 +36,7 @@ public class ConfigProvider {
     private static final String CONFIG_GLOBAL_BASE_FOLDER = "global";
     private static final String CONFIG_CLASS_FOLDER = "class";
 
-    private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass;
+    private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG;
 
     private FilenameFilter propertiesFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
@@ -49,14 +49,18 @@ public class ConfigProvider {
     };
 
     public ConfigProvider(ConfigEnvironment environment, Class clazz) {
+        this(environment, clazz, null);
+    }
+
+    public ConfigProvider(ConfigEnvironment environment, Class clazz, AggregatedResourceBundle testngParams) {
         this.environment = environment;
         // Extract class name for loading if annotation present
         ClassConfig classConfig = (ClassConfig) clazz.getAnnotation(ClassConfig.class);
         if (classConfig != null && classConfig.value() != null) this.clazz = classConfig.value().getSimpleName();
         else if (classConfig != null && classConfig.fileName().contentEquals("")) this.clazz = classConfig.fileName();
         else this.clazz = clazz.getSimpleName();
-
         loadProperties();
+        propsTestNG = testngParams;
     }
 
     private void loadProperties() {
@@ -146,7 +150,10 @@ public class ConfigProvider {
     }
 
     public String get(String key, String defaultValue) {
-        if (propsEnvClass != null && propsEnvClass.containsKey(key)) {
+        if (propsTestNG != null && propsTestNG.containsKey(key)) {
+            log.debug("Retrieved property [" + key + "] from TestNG Parameters");
+            return propsTestNG.getString(key);
+        } else if (propsEnvClass != null && propsEnvClass.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from Environment class properties");
             return propsEnvClass.getString(key);
         } else if (propsGlobalClass != null && propsGlobalClass.containsKey(key)) {
@@ -169,6 +176,7 @@ public class ConfigProvider {
         if (environment != null) logProperties("Environment " + environment, propsEnv);
         logProperties("Global class", propsGlobalClass);
         if (environment != null) logProperties("Environment class " + environment, propsEnvClass);
+        logProperties("TestNG parameters", propsTestNG);
     }
 
     private void logProperties(String title, AggregatedResourceBundle props) {

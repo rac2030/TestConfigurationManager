@@ -6,6 +6,7 @@
 
 package ch.racic.testing.cm.guice;
 
+import ch.racic.testing.cm.AggregatedResourceBundle;
 import ch.racic.testing.cm.ConfigEnvironment;
 import ch.racic.testing.cm.ConfigProvider;
 import com.google.inject.AbstractModule;
@@ -19,6 +20,7 @@ import java.util.Locale;
  */
 public class ConfigModule extends AbstractModule {
 
+    private AggregatedResourceBundle testngParams;
     private ConfigEnvironment env;
     private Class testClass;
 
@@ -36,6 +38,19 @@ public class ConfigModule extends AbstractModule {
     public ConfigModule(ConfigEnvironment env, Class<?> testClass) {
         this.env = env;
         this.testClass = testClass;
+    }
+
+    /**
+     * Constructor for the guice module to be used outside of TestNG but giving a map of key value pairs that override
+     * all keys from property files.
+     *
+     * @param env
+     * @param testClass
+     */
+    public ConfigModule(ConfigEnvironment env, Class<?> testClass, AggregatedResourceBundle params) {
+        this.env = env;
+        this.testClass = testClass;
+        testngParams = params;
     }
 
     /**
@@ -59,10 +74,12 @@ public class ConfigModule extends AbstractModule {
         }
 
         this.testClass = testClass;
+        this.testngParams = new AggregatedResourceBundle();
+        this.testngParams.merge(context.getCurrentXmlTest().getAllParameters());
     }
 
     @Override
     protected void configure() {
-        bind(ConfigProvider.class).toProvider(new ConfigModuleProvider(env, testClass));
+        bind(ConfigProvider.class).toProvider(new ConfigModuleProvider(env, testClass, testngParams));
     }
 }

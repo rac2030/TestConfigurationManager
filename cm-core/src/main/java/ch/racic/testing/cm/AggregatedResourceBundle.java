@@ -56,6 +56,10 @@ public class AggregatedResourceBundle extends ResourceBundle {
         return contents.get(key);
     }
 
+    public synchronized void merge(Map<String, String> params) {
+        contents.putAll(params);
+    }
+
     /**
      * An {@link java.util.Enumeration} implementation, that wraps an {@link java.util.Iterator}. Can be used to
      * integrate older APIs working with enumerations with iterators.
