@@ -9,23 +9,46 @@ package ch.racic.testing.cm;
 import java.util.Locale;
 
 /**
- * Created by rac on 05.04.15.
+ * Wrapper for environment data, the code is used as identifier and must be set trough the constructor.
  */
 public class ConfigEnvironment {
     private String name;
     private String description;
-    private String code;
+    private final String code;
     private Locale locale;
 
-    public ConfigEnvironment() {
+    /**
+     * Construct the environment with the minimal identity which is the key. The key identifies this environments folder
+     * name.
+     *
+     * @param code
+     */
+    public ConfigEnvironment(String code) {
+        this(null, null, code, null);
     }
 
+    /**
+     * Construct the environment giving it a human readable name (which can be used for reporting) and a description.
+     * Everything except the key is optional and can be null.
+     *
+     * @param name
+     * @param description
+     * @param code
+     */
     public ConfigEnvironment(String name, String description, String code) {
-        this.name = name;
-        this.description = description;
-        this.code = code;
+        this(name, description, code, null);
     }
 
+    /**
+     * Construct the environment giving it a human readable name (which can be used for reporting) and a description.
+     * The optional locale is used to identify a localized version of a property file. Everything except the key is
+     * optional and can be null.
+     *
+     * @param name
+     * @param description
+     * @param code
+     * @param locale
+     */
     public ConfigEnvironment(String name, String description, String code, Locale locale) {
         this.name = name;
         this.description = description;
@@ -33,10 +56,21 @@ public class ConfigEnvironment {
         this.locale = locale;
     }
 
+    /**
+     * Get the display name of this environment.
+     *
+     * @return display name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the display name of this environment.
+     *
+     * @param name
+     * @return this
+     */
     public ConfigEnvironment setName(String name) {
         this.name = name;
         return this;
@@ -51,13 +85,13 @@ public class ConfigEnvironment {
         return this;
     }
 
+    /**
+     * Get the environment folder name.
+     *
+     * @return
+     */
     public String getCode() {
         return code;
-    }
-
-    public ConfigEnvironment setCode(String code) {
-        this.code = code;
-        return this;
     }
 
     public Locale getLocale() {
