@@ -35,7 +35,7 @@ public class InjectTest {
         cfg.logAvailableProperties();
         log.debug("Config loaded from: " + cfg.get("config.test.loadedfrom"));
         String environmentCode = environmentCodeIn;
-        if (environmentCode == null) environmentCode = "global";
+        if (environmentCode == null || environmentCode.contentEquals("envBlaBla")) environmentCode = "global";
         String environmentLocaleAppendix = "";
         if (environmentLocale != null) environmentLocaleAppendix = "_" + environmentLocale;
         Assert.assertEquals(cfg.get("config.test.loadedfrom"), environmentCode + "/test" + environmentLocaleAppendix + ".properties", "config.test.loadedfrom gets overwritten by env folder or taken from global if no environment is specified");

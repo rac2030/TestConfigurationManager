@@ -93,15 +93,16 @@ public class ConfigProvider {
             configEnvironmentBaseFolder = new File(configBaseFolder, environment.getCode());
             if (!(configEnvironmentBaseFolder.exists() && configEnvironmentBaseFolder.isDirectory())) {
                 log.error("Configuration initialisation error", new IOException("Environment specific configuration folder does not exist for " + environment));
-            }
-            propsEnv = new AggregatedResourceBundle();
-            // Get list of files in environment folder and load it into props, overriding existing global properties
-            for (File f : configEnvironmentBaseFolder.listFiles(propertiesFilter)) {
-                log.debug("Loading PropertiesResourceBundle from " + f.getPath() + ((environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
-                if (environment.getLocale() != null)
-                    propsEnv.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", ""), environment.getLocale()));
-                else
-                    propsEnv.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", "")));
+            } else {
+                propsEnv = new AggregatedResourceBundle();
+                // Get list of files in environment folder and load it into props, overriding existing global properties
+                for (File f : configEnvironmentBaseFolder.listFiles(propertiesFilter)) {
+                    log.debug("Loading PropertiesResourceBundle from " + f.getPath() + ((environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
+                    if (environment.getLocale() != null)
+                        propsEnv.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", ""), environment.getLocale()));
+                    else
+                        propsEnv.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", "")));
+                }
             }
         }
 

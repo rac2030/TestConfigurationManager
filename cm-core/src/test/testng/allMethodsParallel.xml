@@ -19,4 +19,11 @@
             <class name="ch.racic.testing.cm.InjectTest"/>
         </classes>
     </test>
+    <test name="With not existing environment">
+        <parameter name="environment.code" value="envBlaBla"/>
+        <classes>
+            <class name="ch.racic.testing.cm.SimpleTest"/>
+            <class name="ch.racic.testing.cm.InjectTest"/>
+        </classes>
+    </test>
 </suite>
