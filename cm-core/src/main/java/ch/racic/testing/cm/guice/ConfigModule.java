@@ -75,7 +75,7 @@ public class ConfigModule extends AbstractModule {
 
         this.testClass = testClass;
         this.testngParams = new AggregatedResourceBundle();
-        this.testngParams.merge(context.getCurrentXmlTest().getAllParameters());
+        this.testngParams.mergeOverride(context.getCurrentXmlTest().getAllParameters());
     }
 
     @Override

@@ -28,7 +28,7 @@ public class AggregatedResourceBundle extends ResourceBundle {
         if (bundles != null) {
 
             for (ResourceBundle bundle : bundles) {
-                merge(bundle);
+                mergeOverride(bundle);
             }
         }
     }
@@ -36,7 +36,12 @@ public class AggregatedResourceBundle extends ResourceBundle {
     public AggregatedResourceBundle() {
     }
 
-    public synchronized void merge(ResourceBundle bundle) {
+    /**
+     * Merge the new bundle into the existing while overriding already existing keys.
+     *
+     * @param bundle
+     */
+    public synchronized void mergeOverride(ResourceBundle bundle) {
         Enumeration<String> keys = bundle.getKeys();
         while (keys.hasMoreElements()) {
             String oneKey = keys.nextElement();
@@ -56,7 +61,12 @@ public class AggregatedResourceBundle extends ResourceBundle {
         return contents.get(key);
     }
 
-    public synchronized void merge(Map<String, String> params) {
+    /**
+     * Merge the new bundle into the existing while overriding already existing keys.
+     *
+     * @param params
+     */
+    public synchronized void mergeOverride(Map<String, String> params) {
         contents.putAll(params);
     }
 

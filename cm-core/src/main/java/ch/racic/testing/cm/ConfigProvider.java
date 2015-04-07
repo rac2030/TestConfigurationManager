@@ -79,9 +79,9 @@ public class ConfigProvider {
 
                 log.debug("Loading PropertiesResourceBundle from " + f.getPath() + ((environment != null && environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
                 if (environment != null && environment.getLocale() != null)
-                    propsGlobal.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + f.getName().replace(".properties", ""), environment.getLocale()));
+                    propsGlobal.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + f.getName().replace(".properties", ""), environment.getLocale()));
                 else
-                    propsGlobal.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + f.getName().replace(".properties", "")));
+                    propsGlobal.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + f.getName().replace(".properties", "")));
             }
         } else {
             log.warn("global folder not existing, can't load default values");
@@ -99,9 +99,9 @@ public class ConfigProvider {
             for (File f : configEnvironmentBaseFolder.listFiles(propertiesFilter)) {
                 log.debug("Loading PropertiesResourceBundle from " + f.getPath() + ((environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
                 if (environment.getLocale() != null)
-                    propsEnv.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", ""), environment.getLocale()));
+                    propsEnv.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", ""), environment.getLocale()));
                 else
-                    propsEnv.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", "")));
+                    propsEnv.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", "")));
             }
         }
 
@@ -114,9 +114,9 @@ public class ConfigProvider {
                 // It exists, load it into props
                 log.debug("Loading PropertiesResourceBundle from " + classProps.getPath() + ((environment != null && environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
                 if (environment != null && environment.getLocale() != null)
-                    propsGlobalClass.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment.getLocale()));
+                    propsGlobalClass.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment.getLocale()));
                 else
-                    propsGlobalClass.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz));
+                    propsGlobalClass.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz));
             }
         }
 
@@ -129,9 +129,9 @@ public class ConfigProvider {
                 // It exists, load it into props
                 log.debug("Loading PropertiesResourceBundle from " + classProps.getPath() + ((environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
                 if (environment.getLocale() != null)
-                    propsEnvClass.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment.getLocale()));
+                    propsEnvClass.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment.getLocale()));
                 else
-                    propsEnvClass.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + CONFIG_CLASS_FOLDER + "." + clazz));
+                    propsEnvClass.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + CONFIG_CLASS_FOLDER + "." + clazz));
             }
         }
 
@@ -171,6 +171,9 @@ public class ConfigProvider {
         }
     }
 
+    /**
+     * Log all the properties by category, starting with the lowest layer.
+     */
     public void logAvailableProperties() {
         logProperties("Global", propsGlobal);
         if (environment != null) logProperties("Environment " + environment, propsEnv);
