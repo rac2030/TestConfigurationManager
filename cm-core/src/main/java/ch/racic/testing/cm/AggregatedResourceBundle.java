@@ -70,6 +70,12 @@ public class AggregatedResourceBundle extends ResourceBundle {
         contents.putAll(params);
     }
 
+    public synchronized void mergeOverride(Properties props) {
+        for (String key : props.stringPropertyNames()) {
+            contents.put(key, props.getProperty(key));
+        }
+    }
+
     /**
      * An {@link java.util.Enumeration} implementation, that wraps an {@link java.util.Iterator}. Can be used to
      * integrate older APIs working with enumerations with iterators.

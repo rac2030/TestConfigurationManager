@@ -17,10 +17,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Created by rac on 05.04.15.
@@ -38,7 +35,7 @@ public class ConfigProvider {
     private static final String CONFIG_GLOBAL_BASE_FOLDER = "global";
     private static final String CONFIG_CLASS_FOLDER = "class";
 
-    private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG;
+    private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass;
 
     private FilenameFilter propertiesFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
@@ -160,6 +157,9 @@ public class ConfigProvider {
         if (propsTestNG != null && propsTestNG.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from TestNG Parameters");
             return propsTestNG.getString(key);
+        } else if (propsCustomClass != null && propsCustomClass.containsKey(key)) {
+            log.debug("Retrieved property [" + key + "] from custom set class properties");
+            return propsCustomClass.getString(key);
         } else if (propsEnvClass != null && propsEnvClass.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from Environment class properties");
             return propsEnvClass.getString(key);
@@ -187,12 +187,18 @@ public class ConfigProvider {
     public boolean contains(String key) {
         if (parentConfig.contains(key)) return true;
         if (propsTestNG.containsKey(key)) return true;
+        if (propsCustomClass.containsKey(key)) return true;
         if (propsEnvClass.containsKey(key)) return true;
         if (propsGlobalClass.containsKey(key)) return true;
         if (propsEnv.containsKey(key)) return true;
         if (propsGlobal.containsKey(key)) return true;
         // 404 no property found
         return false;
+    }
+
+    public void loadCustomClassProperties(Properties custom) {
+        propsCustomClass = new AggregatedResourceBundle();
+        propsCustomClass.mergeOverride(custom);
     }
 
     /**
