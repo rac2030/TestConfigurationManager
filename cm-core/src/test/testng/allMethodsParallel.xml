@@ -1,0 +1,22 @@
+<!--
+  ~ Copyleft (c) 2015. This code is for learning purposes only.
+  ~ Do whatever you like with it but don't take it as perfect code.
+  ~ //Michel Racic (http://rac.su/+)//
+  -->
+
+<suite name="CM tests" parallel="methods" thread-count="3" verbose="10">
+    <test name="Without environment">
+        <classes>
+            <class name="ch.racic.testing.cm.SimpleTest"/>
+            <class name="ch.racic.testing.cm.InjectTest"/>
+        </classes>
+    </test>
+    <test name="With environment and locale">
+        <parameter name="environment.code" value="env1"/>
+        <parameter name="environment.locale" value="de"/>
+        <classes>
+            <class name="ch.racic.testing.cm.SimpleTest"/>
+            <class name="ch.racic.testing.cm.InjectTest"/>
+        </classes>
+    </test>
+</suite>

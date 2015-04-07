@@ -50,7 +50,10 @@ public class ConfigModule extends AbstractModule {
         String envDesc = test.getParameter(ENVIRONMENT_DESCRIPTION);
         String envCode = test.getParameter(ENVIRONMENT_CODE);
         String envLocale = test.getParameter(ENVIRONMENT_LOCALE);
-        Locale locale = Locale.forLanguageTag(envLocale);
+        Locale locale = null;
+        if (envLocale != null) {
+            locale = Locale.forLanguageTag(envLocale);
+        }
         if (envCode != null) {
             env = new ConfigEnvironment(envName, envDesc, envCode, locale);
         }

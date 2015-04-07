@@ -13,6 +13,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Guice;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 /**
@@ -28,14 +30,18 @@ public class InjectTest {
     ConfigProvider cfg;
 
     @Test
-    public void simpleTest() {
+    @Parameters({"environment.code", "environment.locale"})
+    public void simpleTest(@Optional String environmentCode, @Optional String environmentLocale) {
         cfg.logAvailableProperties();
         log.debug("Config loaded from: " + cfg.get("config.test.loadedfrom"));
-        Assert.assertEquals(cfg.get("config.test.loadedfrom"), "env1/test_de.properties", "config.test.loadedfrom gets overwritten by env folder");
+        if (environmentCode == null) environmentCode = "global";
+        String environmentLocaleAppendix = "";
+        if (environmentLocale != null) environmentLocaleAppendix = "_" + environmentLocale;
+        Assert.assertEquals(cfg.get("config.test.loadedfrom"), environmentCode + "/test" + environmentLocaleAppendix + ".properties", "config.test.loadedfrom gets overwritten by env folder or taken from global if no environment is specified");
         Assert.assertEquals(cfg.get("config.test.global"), "global", "config.test.global gets not overwritten");
-        Assert.assertEquals(cfg.get("config.test.env"), "env1", "config.test.env gets overwritten by env folder");
+        Assert.assertEquals(cfg.get("config.test.env"), environmentCode, "config.test.env gets overwritten by env folder or taken from global if no environment is specified");
         Assert.assertEquals(cfg.get("config.test.global.class"), "SimpleTest.global", "config.test.global.class gets not overwritten");
-        Assert.assertEquals(cfg.get("config.test.env.class"), "SimpleTest.env1", "config.test.env.class gets overwritten by env folder");
+        Assert.assertEquals(cfg.get("config.test.env.class"), "SimpleTest." + environmentCode, "config.test.env.class gets overwritten by env folder or taken from global if no environment is specified");
 
     }
 

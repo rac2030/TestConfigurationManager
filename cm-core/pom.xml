@@ -6,7 +6,7 @@
 
     <groupId>ch.racic.testing</groupId>
     <artifactId>test-configuration-manager</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <name>Test Configuration Manager</name>
     <description>A configuration manager tailored for functional testing with TestNG.</description>
     <url>https://github.com/rac2030/TestConfigurationManager</url>
@@ -91,6 +91,16 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.18.1</version>
+                <configuration>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/testng/allMethodsParallel.xml</suiteXmlFile>
+                    </suiteXmlFiles>
                 </configuration>
             </plugin>
             <plugin>

@@ -73,7 +73,7 @@ public class ConfigProvider {
             // Get list of files in global folder and load it into props
             for (File f : configGlobalBaseFolder.listFiles(propertiesFilter)) {
 
-                log.debug("Loading PropertiesResourceBundle from " + f.getPath() + ((environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
+                log.debug("Loading PropertiesResourceBundle from " + f.getPath() + ((environment != null && environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
                 if (environment != null && environment.getLocale() != null)
                     propsGlobal.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + f.getName().replace(".properties", ""), environment.getLocale()));
                 else
@@ -108,8 +108,8 @@ public class ConfigProvider {
             if (classProps.exists() && classProps.isFile()) {
                 propsGlobalClass = new AggregatedResourceBundle();
                 // It exists, load it into props
-                log.debug("Loading PropertiesResourceBundle from " + classProps.getPath() + ((environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
-                if (environment.getLocale() != null)
+                log.debug("Loading PropertiesResourceBundle from " + classProps.getPath() + ((environment != null && environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
+                if (environment != null && environment.getLocale() != null)
                     propsGlobalClass.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment.getLocale()));
                 else
                     propsGlobalClass.merge(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz));
