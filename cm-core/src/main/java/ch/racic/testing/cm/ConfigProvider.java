@@ -196,7 +196,7 @@ public class ConfigProvider {
      */
     public <T> T create(Class<T> type, Module... modules) {
         List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
-        mList.add(new ConfigModule(environment, type));
+        mList.add(new ConfigModule(environment, type, propsTestNG));
         Injector injector = com.google.inject.Guice.createInjector(mList);
         return injector.getInstance(type);
     }
