@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by rac on 05.04.15.
+ * This ConfigProvider handles configuration management tailored for usage in TestNG. It maintains several layers of
+ * properties which can override the previous layer.
  */
 public class ConfigProvider {
 
@@ -146,10 +147,23 @@ public class ConfigProvider {
         return clazz;
     }
 
+    /**
+     * Get the property value for this key, return null if it's not existing.
+     *
+     * @param key
+     * @return value
+     */
     public String get(String key) {
         return get(key, null);
     }
 
+    /**
+     * Get the property value for this key, returns the given defaultValue if it's not existing.
+     *
+     * @param key
+     * @param defaultValue
+     * @return value
+     */
     public String get(String key, String defaultValue) {
         if (parentConfig != null && parentConfig.contains(key)) {
             log.debug("Retrieved property [" + key + "] from parent config");
@@ -197,6 +211,11 @@ public class ConfigProvider {
         return false;
     }
 
+    /**
+     * Loads a special class properties file which overrides all the layers except the TestNG parameter layer.
+     *
+     * @param custom Properties object
+     */
     public void loadCustomClassProperties(Properties custom) {
         propsCustomClass = new AggregatedResourceBundle();
         propsCustomClass.mergeOverride(custom);
@@ -221,12 +240,14 @@ public class ConfigProvider {
     }
 
     /**
-     * Create an instance of a class using the config injector and any guice modules given in parameters.
+     * Create an instance of a class using the config injector and any guice modules given in parameters. It will use
+     * this ConfigProvider as parent, that means that all the properties from this object will override the properties
+     * it loads from it's own class files.
      *
      * @param type
      * @param modules ...
      * @param <T>
-     * @return
+     * @return object instance
      */
     public <T> T create(Class<T> type, Module... modules) {
         List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
