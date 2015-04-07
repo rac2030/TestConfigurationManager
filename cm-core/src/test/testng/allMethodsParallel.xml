@@ -4,7 +4,7 @@
   ~ //Michel Racic (http://rac.su/+)//
   -->
 
-<suite name="CM tests" parallel="methods" thread-count="3" verbose="10">
+<suite name="CM tests" parallel="methods" thread-count="2" verbose="10">
     <test name="Without environment">
         <classes>
             <class name="ch.racic.testing.cm.SimpleTest"/>

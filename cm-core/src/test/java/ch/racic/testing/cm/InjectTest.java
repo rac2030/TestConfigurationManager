@@ -31,9 +31,10 @@ public class InjectTest {
 
     @Test
     @Parameters({"environment.code", "environment.locale"})
-    public void simpleTest(@Optional String environmentCode, @Optional String environmentLocale) {
+    public void simpleTest(@Optional String environmentCodeIn, @Optional String environmentLocale) {
         cfg.logAvailableProperties();
         log.debug("Config loaded from: " + cfg.get("config.test.loadedfrom"));
+        String environmentCode = environmentCodeIn;
         if (environmentCode == null) environmentCode = "global";
         String environmentLocaleAppendix = "";
         if (environmentLocale != null) environmentLocaleAppendix = "_" + environmentLocale;
@@ -42,7 +43,7 @@ public class InjectTest {
         Assert.assertEquals(cfg.get("config.test.env"), environmentCode, "config.test.env gets overwritten by env folder or taken from global if no environment is specified");
         Assert.assertEquals(cfg.get("config.test.global.class"), "SimpleTest.global", "config.test.global.class gets not overwritten");
         Assert.assertEquals(cfg.get("config.test.env.class"), "SimpleTest." + environmentCode, "config.test.env.class gets overwritten by env folder or taken from global if no environment is specified");
-        Assert.assertEquals(cfg.get("environment.code"), environmentCode, "Value from config is same as value directly from parameter injected by TestNG");
+        Assert.assertEquals(cfg.get("environment.code"), environmentCodeIn, "Value from config is same as value directly from parameter injected by TestNG");
     }
 
     @Test
