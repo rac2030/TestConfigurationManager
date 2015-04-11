@@ -9,6 +9,7 @@ package ch.racic.testing.cm;
 import ch.racic.testing.cm.annotation.ClassConfig;
 import ch.racic.testing.cm.guice.ConfigModuleFactory;
 import com.google.inject.Inject;
+import org.apache.commons.exec.OS;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
@@ -50,6 +51,18 @@ public class InjectTest {
     public void injectInObject() {
         TestObject to = cfg.create(TestObject.class);
         Assert.assertEquals(to.getObjectConf(), "from global", "TestObject could load its class properties from global");
+    }
+
+    @Test
+    public void osSpecific() {
+        // detect current OS for comparsion
+        String osExpected = null;
+        if (OS.isFamilyWindows()) osExpected = "Windows";
+        else if (OS.isFamilyUnix()) osExpected = "Linux";
+        else if (OS.isFamilyMac()) osExpected = "Mac";
+
+        Assert.assertNotEquals(cfg.get("detected.os"), "None", "OS property has been loaded and is not default");
+        Assert.assertEquals(cfg.get("detected.os"), osExpected, "OS property contains the value we expect from the current runtime system");
     }
 
 
