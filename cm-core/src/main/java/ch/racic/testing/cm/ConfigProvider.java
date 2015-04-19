@@ -10,6 +10,7 @@ import ch.racic.testing.cm.annotation.ClassConfig;
 import ch.racic.testing.cm.guice.ConfigModule;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import org.apache.commons.exec.OS;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,11 +33,14 @@ public class ConfigProvider {
     private ConfigEnvironment environment;
     private String clazz;
 
+    private List<Module> guiceModules;
+
     private static final String CONFIG_BASE_FOLDER = "config";
     private static final String CONFIG_GLOBAL_BASE_FOLDER = "global";
     private static final String CONFIG_CLASS_FOLDER = "class";
+    private static final String CONFIG_OS_FOLDER = "os";
 
-    private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass;
+    private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass, propsOS;
 
     private FilenameFilter propertiesFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
@@ -137,6 +141,24 @@ public class ConfigProvider {
             }
         }
 
+        loadOSProperties();
+
+    }
+
+    private void loadOSProperties() {
+        String detectedOS = null;
+        propsOS = new AggregatedResourceBundle();
+        if (OS.isFamilyWindows()) {
+            // Load windows properties
+            propsOS.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_OS_FOLDER + ".windows"));
+        } else if (OS.isFamilyUnix()) {
+            // Load linux properties
+            propsOS.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_OS_FOLDER + ".linux"));
+        } else if (OS.isFamilyMac()) {
+            // Load mac properties
+            propsOS.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_OS_FOLDER + ".mac"));
+        }
+
     }
 
     public ConfigEnvironment getEnvironment() {
@@ -172,6 +194,9 @@ public class ConfigProvider {
         if (propsTestNG != null && propsTestNG.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from TestNG Parameters");
             return propsTestNG.getString(key);
+        } else if (propsOS != null && propsOS.containsKey(key)) {
+            log.debug("Retrieved property [" + key + "] from OS properties");
+            return propsOS.getString(key);
         } else if (propsCustomClass != null && propsCustomClass.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from custom set class properties");
             return propsCustomClass.getString(key);
@@ -212,12 +237,12 @@ public class ConfigProvider {
     }
 
     /**
-     * Loads a special class properties file which overrides all the layers except the TestNG parameter layer.
+     * Loads a special class properties file which overrides all the layers except the TestNG and OS parameter layer.
      *
      * @param custom Properties object
      */
     public void loadCustomClassProperties(Properties custom) {
-        propsCustomClass = new AggregatedResourceBundle();
+        if (propsCustomClass == null) propsCustomClass = new AggregatedResourceBundle();
         propsCustomClass.mergeOverride(custom);
     }
 
@@ -239,6 +264,12 @@ public class ConfigProvider {
             log.info("\tKey[" + key + "], Value[" + props.getString(key) + "]");
     }
 
+
+    public ConfigProvider setGuiceModules(List<Module> guiceModules) {
+        this.guiceModules = guiceModules;
+        return this;
+    }
+
     /**
      * Create an instance of a class using the config injector and any guice modules given in parameters. It will use
      * this ConfigProvider as parent, that means that all the properties from this object will override the properties
@@ -251,6 +282,9 @@ public class ConfigProvider {
      */
     public <T> T create(Class<T> type, Module... modules) {
         List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
+        if (guiceModules != null) {
+            mList.addAll(guiceModules);
+        }
         mList.add(new ConfigModule(parentConfig, environment, type, propsTestNG));
         Injector injector = com.google.inject.Guice.createInjector(mList);
         return injector.getInstance(type);

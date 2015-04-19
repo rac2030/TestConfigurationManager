@@ -10,9 +10,11 @@ import ch.racic.testing.cm.AggregatedResourceBundle;
 import ch.racic.testing.cm.ConfigEnvironment;
 import ch.racic.testing.cm.ConfigProvider;
 import com.google.inject.AbstractModule;
+import com.google.inject.Module;
 import org.testng.ITestContext;
 import org.testng.xml.XmlTest;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -24,6 +26,7 @@ public class ConfigModule extends AbstractModule {
     private ConfigEnvironment env;
     private Class testClass;
     private ConfigProvider parent;
+    private List<Module> guiceModules;
 
     public static final String ENVIRONMENT_NAME = "environment.name";
     public static final String ENVIRONMENT_DESCRIPTION = "environment.description";
@@ -78,10 +81,12 @@ public class ConfigModule extends AbstractModule {
         this.testClass = testClass;
         this.testngParams = new AggregatedResourceBundle();
         this.testngParams.mergeOverride(context.getCurrentXmlTest().getAllParameters());
+        // TODO get current TestNG guice modules from context
+
     }
 
     @Override
     protected void configure() {
-        bind(ConfigProvider.class).toProvider(new ConfigModuleProvider(parent, env, testClass, testngParams));
+        bind(ConfigProvider.class).toProvider(new ConfigModuleProvider(parent, env, testClass, testngParams).setGuiceModules(guiceModules));
     }
 }
