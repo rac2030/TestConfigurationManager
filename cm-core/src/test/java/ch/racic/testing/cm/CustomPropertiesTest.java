@@ -13,10 +13,9 @@ import org.apache.commons.exec.OS;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
-import org.testng.annotations.Guice;
-import org.testng.annotations.Optional;
-import org.testng.annotations.Parameters;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+
+import java.util.Properties;
 
 /**
  * Created by rac on 05.04.15.
@@ -29,6 +28,18 @@ public class CustomPropertiesTest {
 
     @Inject
     ConfigProvider cfg;
+
+    @BeforeClass
+    public void setCustomPropertiesFromCode() {
+        Properties props = new Properties();
+        props.put("runtime.properties.addition", "working");
+        cfg.loadCustomClassProperties(props);
+    }
+
+    @Test
+    public void checkRuntimeProperties() {
+        Assert.assertEquals(cfg.get("runtime.properties.addition"), "working", "Runtime properties have been set");
+    }
 
     @Test
     @Parameters({"environment.code", "environment.locale"})
