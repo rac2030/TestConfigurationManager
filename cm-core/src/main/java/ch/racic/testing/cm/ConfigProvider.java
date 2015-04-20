@@ -35,10 +35,10 @@ public class ConfigProvider {
 
     private List<Module> guiceModules;
 
-    private static final String CONFIG_BASE_FOLDER = "config";
-    private static final String CONFIG_GLOBAL_BASE_FOLDER = "global";
-    private static final String CONFIG_CLASS_FOLDER = "class";
-    private static final String CONFIG_OS_FOLDER = "os";
+    public static final String CONFIG_BASE_FOLDER = "config";
+    public static final String CONFIG_GLOBAL_BASE_FOLDER = "global";
+    public static final String CONFIG_CLASS_FOLDER = "class";
+    public static final String CONFIG_OS_FOLDER = "os";
 
     private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass, propsOS;
 
@@ -61,7 +61,7 @@ public class ConfigProvider {
         this.environment = environment;
         // Extract class name for loading if annotation present
         ClassConfig classConfig = (ClassConfig) clazz.getAnnotation(ClassConfig.class);
-        if (classConfig != null && classConfig.value() != null) this.clazz = classConfig.value().getSimpleName();
+        if (classConfig != null && classConfig.value().length != 0) this.clazz = classConfig.value()[0].getSimpleName();
         else if (classConfig != null && classConfig.fileName().contentEquals("")) this.clazz = classConfig.fileName();
         else this.clazz = clazz.getSimpleName();
         loadProperties();

@@ -6,18 +6,25 @@
 
 package ch.racic.testing.cm.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Created by rac on 06.04.15.
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 public @interface ClassConfig {
-    public Class value();
+    /**
+     * Class name corresponding to properties name in config class folder.
+     *
+     * @return
+     */
+    public Class[] value() default {};
 
+    /**
+     * Custom properties file name relative to the config class folder.
+     * @return
+     */
     public String fileName() default "";
 }
