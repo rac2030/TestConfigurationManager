@@ -62,7 +62,8 @@ public class ConfigProvider {
         // Extract class name for loading if annotation present
         ClassConfig classConfig = (ClassConfig) clazz.getAnnotation(ClassConfig.class);
         if (classConfig != null && classConfig.value().length != 0) this.clazz = classConfig.value()[0].getSimpleName();
-        else if (classConfig != null && classConfig.fileName().contentEquals("")) this.clazz = classConfig.fileName();
+        else if (classConfig != null && !classConfig.fileName().contentEquals(""))
+            this.clazz = classConfig.fileName().replace(".properties", "");
         else this.clazz = clazz.getSimpleName();
         loadProperties();
         propsTestNG = testngParams;
