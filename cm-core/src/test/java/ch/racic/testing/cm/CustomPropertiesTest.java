@@ -66,7 +66,7 @@ public class CustomPropertiesTest {
 
     @Test
     public void osSpecific() {
-        // detect current OS for comparsion
+        // detect current OS for comparison
         String osExpected = null;
         if (OS.isFamilyWindows()) osExpected = "Windows";
         else if (OS.isFamilyUnix()) osExpected = "Linux";
