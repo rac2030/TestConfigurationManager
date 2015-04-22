@@ -220,6 +220,20 @@ public class ConfigProvider {
     }
 
     /**
+     * Get the property value for this key, throws an exception if key is not existing.
+     *
+     * @param key
+     * @return
+     * @throws NoSuchElementException
+     */
+    public String getRequired(String key) throws NoSuchElementException {
+        if (contains(key))
+            return get(key);
+        else
+            throw new NoSuchElementException("Key [" + key + "] does not exist");
+    }
+
+    /**
      * Check if the key is somewhere in the properties chain on all layers including parent.
      *
      * @param key
