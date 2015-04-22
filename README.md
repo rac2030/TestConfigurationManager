@@ -5,6 +5,6 @@ A configuration manager tailored for functional testing with TestNG.
 <dependency>
   <groupId>ch.racic.testing</groupId>
   <artifactId>test-configuration-manager</artifactId>
-  <version>0.9.1</version>
+  <version>0.9.2</version>
 </dependency>
 ```
