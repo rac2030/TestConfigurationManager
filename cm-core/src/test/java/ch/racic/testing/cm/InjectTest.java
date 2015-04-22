@@ -18,6 +18,8 @@ import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
+import java.util.NoSuchElementException;
+
 /**
  * Created by rac on 05.04.15.
  */
@@ -63,6 +65,11 @@ public class InjectTest {
 
         Assert.assertNotEquals(cfg.get("detected.os"), "None", "OS property has been loaded and is not default");
         Assert.assertEquals(cfg.get("detected.os"), osExpected, "OS property contains the value we expect from the current runtime system");
+    }
+
+    @Test(expectedExceptions = {NoSuchElementException.class})
+    public void requiredProperty() {
+        cfg.getRequired("bliblablup");
     }
 
 

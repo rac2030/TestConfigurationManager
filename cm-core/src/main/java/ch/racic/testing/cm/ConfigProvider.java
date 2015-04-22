@@ -142,22 +142,24 @@ public class ConfigProvider {
             }
         }
 
-        loadOSProperties();
+        loadOSProperties(configBaseFolder);
 
     }
 
-    private void loadOSProperties() {
+    private void loadOSProperties(File configBaseFolder) {
         String detectedOS = null;
         propsOS = new AggregatedResourceBundle();
         if (OS.isFamilyWindows()) {
-            // Load windows properties
-            propsOS.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_OS_FOLDER + ".windows"));
+            detectedOS = "windows";
         } else if (OS.isFamilyUnix()) {
-            // Load linux properties
-            propsOS.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_OS_FOLDER + ".linux"));
+            detectedOS = "linux";
         } else if (OS.isFamilyMac()) {
-            // Load mac properties
-            propsOS.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_OS_FOLDER + ".mac"));
+            detectedOS = "mac";
+        }
+        if (detectedOS != null) {
+            File osProps = new File(configBaseFolder, CONFIG_OS_FOLDER + "/" + detectedOS + ".properties");
+            if (osProps.exists() && osProps.isFile())
+                propsOS.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_OS_FOLDER + "." + detectedOS));
         }
 
     }
@@ -240,13 +242,14 @@ public class ConfigProvider {
      * @return
      */
     public boolean contains(String key) {
-        if (parentConfig.contains(key)) return true;
-        if (propsTestNG.containsKey(key)) return true;
-        if (propsCustomClass.containsKey(key)) return true;
-        if (propsEnvClass.containsKey(key)) return true;
-        if (propsGlobalClass.containsKey(key)) return true;
-        if (propsEnv.containsKey(key)) return true;
-        if (propsGlobal.containsKey(key)) return true;
+        if (parentConfig != null && parentConfig.contains(key)) return true;
+        if (propsTestNG != null && propsTestNG.containsKey(key)) return true;
+        if (propsOS != null && propsOS.containsKey(key)) return true;
+        if (propsCustomClass != null && propsCustomClass.containsKey(key)) return true;
+        if (propsEnvClass != null && propsEnvClass.containsKey(key)) return true;
+        if (propsGlobalClass != null && propsGlobalClass.containsKey(key)) return true;
+        if (propsEnv != null && propsEnv.containsKey(key)) return true;
+        if (propsGlobal != null && propsGlobal.containsKey(key)) return true;
         // 404 no property found
         return false;
     }
