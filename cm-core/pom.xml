@@ -6,7 +6,7 @@
 
     <groupId>ch.racic.testing</groupId>
     <artifactId>test-configuration-manager</artifactId>
-    <version>0.9.3-SNAPSHOT</version>
+    <version>0.9.4-SNAPSHOT</version>
     <name>Test Configuration Manager</name>
     <description>A configuration manager tailored for functional testing with TestNG.</description>
     <url>https://github.com/rac2030/TestConfigurationManager</url>
