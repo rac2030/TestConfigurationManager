@@ -18,13 +18,17 @@ public @interface ClassConfig {
     /**
      * Class name corresponding to properties name in config class folder.
      *
-     * @return
+     * @return class corresponding to the properties file
      */
     public Class[] value() default {};
 
     /**
      * Custom properties file name relative to the config class folder.
-     * @return
+     * If you are using directories, it is needed that you follow the ResourceBundle notation which uses a dot '.' as
+     * folder separator. You can leave out the .properties at the end as it will get stripped away anyway in order
+     * to load a specific language bundle (using the locale and the standard loading mechanism of ResourceBundle.
+     *
+     * @return relative file name
      */
     public String fileName() default "";
 }
