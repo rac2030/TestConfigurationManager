@@ -268,11 +268,18 @@ public class ConfigProvider {
      * Log all the properties by category, starting with the lowest layer.
      */
     public void logAvailableProperties() {
-        logProperties("Global", propsGlobal);
-        if (environment != null) logProperties("Environment " + environment, propsEnv);
-        logProperties("Global class", propsGlobalClass);
-        if (environment != null) logProperties("Environment class " + environment, propsEnvClass);
+        if (parentConfig != null) {
+            log.info("Parent properties start");
+            parentConfig.logAvailableProperties();
+            log.info("Parent properties end");
+        }
         logProperties("TestNG parameters", propsTestNG);
+        logProperties("OS", propsOS);
+        logProperties("Custom class", propsCustomClass);
+        if (environment != null) logProperties("Environment class " + environment, propsEnvClass);
+        logProperties("Global class", propsGlobalClass);
+        if (environment != null) logProperties("Environment " + environment, propsEnv);
+        logProperties("Global", propsGlobal);
     }
 
     private void logProperties(String title, AggregatedResourceBundle props) {

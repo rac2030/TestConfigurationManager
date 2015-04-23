@@ -10,6 +10,7 @@
             <class name="ch.racic.testing.cm.SimpleTest"/>
             <class name="ch.racic.testing.cm.InjectTest"/>
             <class name="ch.racic.testing.cm.CustomPropertiesTest"/>
+            <class name="ch.racic.testing.cm.NoPropertiesTest"/>
         </classes>
     </test>
     <test name="With environment and locale">
@@ -19,6 +20,7 @@
             <class name="ch.racic.testing.cm.SimpleTest"/>
             <class name="ch.racic.testing.cm.InjectTest"/>
             <class name="ch.racic.testing.cm.CustomPropertiesTest"/>
+            <class name="ch.racic.testing.cm.NoPropertiesTest"/>
         </classes>
     </test>
     <test name="With not existing environment">
@@ -27,6 +29,7 @@
             <class name="ch.racic.testing.cm.SimpleTest"/>
             <class name="ch.racic.testing.cm.InjectTest"/>
             <class name="ch.racic.testing.cm.CustomPropertiesTest"/>
+            <class name="ch.racic.testing.cm.NoPropertiesTest"/>
         </classes>
     </test>
 </suite>
