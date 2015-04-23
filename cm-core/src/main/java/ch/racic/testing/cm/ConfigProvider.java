@@ -295,6 +295,21 @@ public class ConfigProvider {
         return this;
     }
 
+    public ConfigProvider addGuiceModule(Module... modules) {
+        if (parentConfig != null) {
+            // let it be added to the parent
+            parentConfig.addGuiceModule(modules);
+            return this;
+        }
+        if (guiceModules == null) {
+            // initialize
+            guiceModules = new ArrayList<Module>(Arrays.asList(modules));
+        } else {
+            guiceModules.addAll(Arrays.asList(modules));
+        }
+        return this;
+    }
+
     /**
      * Create an instance of a class using the config injector and any guice modules given in parameters. It will use
      * this ConfigProvider as parent, that means that all the properties from this object will override the properties
@@ -306,13 +321,18 @@ public class ConfigProvider {
      * @return object instance
      */
     public <T> T create(Class<T> type, Module... modules) {
-        List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
-        if (guiceModules != null) {
-            mList.addAll(guiceModules);
+        if (parentConfig == null) {
+            List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
+            if (guiceModules != null) {
+                mList.addAll(guiceModules);
+            }
+            mList.add(new ConfigModule(this, environment, type, propsTestNG));
+            Injector injector = com.google.inject.Guice.createInjector(mList);
+            return injector.getInstance(type);
+        } else {
+            // Let the root parent do the injecting
+            return parentConfig.create(type, modules);
         }
-        mList.add(new ConfigModule(parentConfig, environment, type, propsTestNG));
-        Injector injector = com.google.inject.Guice.createInjector(mList);
-        return injector.getInstance(type);
     }
 
 }
