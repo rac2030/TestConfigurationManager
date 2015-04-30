@@ -1,5 +1,6 @@
 package ch.racic.testing.cm;
 
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
@@ -7,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Goal which touches a timestamp file.
@@ -54,6 +56,9 @@ public class ConfigEnumGeneratorMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
         // TODO generate something
+        List<Resource> testResources = project.getTestResources();
+        List<Resource> mainResources = project.getResources();
+        // TODO getting root resource folders and check if there is a config global folder to determine if there are any interesting files to parse?
 
         // After all is generated, let's add it to the corresponding source root
         if (testSourceOnly) loadGeneratedTestSources();
