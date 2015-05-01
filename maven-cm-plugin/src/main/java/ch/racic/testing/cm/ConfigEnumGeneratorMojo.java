@@ -8,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -56,14 +57,30 @@ public class ConfigEnumGeneratorMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
         // TODO generate something
-        List<Resource> testResources = project.getTestResources();
-        List<Resource> mainResources = project.getResources();
-        // TODO getting root resource folders and check if there is a config global folder to determine if there are any interesting files to parse?
+        List<Resource> resources = project.getTestResources();
+        resources.addAll(project.getResources());
+        // getting root resource folders and check if there is a config folder to determine if there are any interesting files to parse?
+        List<File> resourceDirs = parseResources(resources);
+
 
         // After all is generated, let's add it to the corresponding source root
         if (testSourceOnly) loadGeneratedTestSources();
         else loadGeneratedSources();
 
+    }
+
+    private List<File> parseResources(List<Resource> resources) {
+        List<File> configFolders = new ArrayList<File>();
+        // iterate over the resource folders and see which contain any config folder
+        for (Resource res : resources) {
+            File root = new File(res.getDirectory());
+            File config = new File(root, "config");
+            if (config.exists() && config.isDirectory()) {
+                // Found a config folder
+                configFolders.add(config);
+            }
+        }
+        return configFolders;
     }
 
     private void loadGeneratedTestSources() {

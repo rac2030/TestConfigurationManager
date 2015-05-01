@@ -13,8 +13,8 @@
     <packaging>maven-plugin</packaging>
   <version>0.0.1-SNAPSHOT</version>
   <name>maven-cm-plugin Maven Mojo</name>
-  <url>http://maven.apache.org</url>
-  <dependencies>
+
+    <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
