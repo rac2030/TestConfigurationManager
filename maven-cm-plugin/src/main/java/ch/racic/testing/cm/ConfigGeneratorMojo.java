@@ -56,24 +56,32 @@ public class ConfigGeneratorMojo extends AbstractMojo {
     private boolean testSourceOnly;
 
     public void execute() throws MojoExecutionException {
-        // TODO generate something
+        // Get resource directories, there could be more than 1 and on main and test level
         List<Resource> resources = project.getTestResources();
         resources.addAll(project.getResources());
         // getting root resource folders and check if there is a config/global folder to determine if there are any interesting files to parse?
         List<File> configDirs = filterResources(resources);
         // parse global config properties
-        //TODO generate a class for each property file
-        //TODO generate a class G which contains a field for each property file class
-
+        // Generate a class G which contains a static inner class for each property file with constants from the property names
+        generateG(configDirs);
         // find class folders
         List<File> classConfigDirs = filterClassResources(configDirs);
-        // TODO Generate a class C for each class config, lats package name segment corresponding to the class name
-
-
+        // Generate a class C which contains a static inner class for each class config with constants from property names
+        generateC(classConfigDirs);
 
         // After all is generated, let's add it to the corresponding source root
         if (testSourceOnly) loadGeneratedTestSources();
         else loadGeneratedSources();
+
+    }
+
+    private void generateC(List<File> classConfigDirs) {
+        // TODO Generate a class C which contains a static inner class for each class config with constants from property names
+
+    }
+
+    private void generateG(List<File> configDirs) {
+        //TODO generate a class G which contains a static inner class for each property file with constants from the property names
 
     }
 
@@ -105,7 +113,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     private void loadGeneratedTestSources() {
         if (!settings.isInteractiveMode()) {
-            getLog().info(String.format("Adding generated configuration enums from %s to test compile source root",
+            getLog().info(String.format("Adding generated configuration classes from %s to test compile source root",
                     outputDir.getAbsolutePath()));
         }
         project.addTestCompileSourceRoot(outputDir.getAbsolutePath());
@@ -113,9 +121,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     private void loadGeneratedSources() {
         if (!settings.isInteractiveMode()) {
-            getLog().info(String.format("Adding generated configuration enums from %s to compile source root",
+            getLog().info(String.format("Adding generated configuration classes from %s to compile source root",
                     outputDir.getAbsolutePath()));
         }
-        project.addTestCompileSourceRoot(outputDir.getAbsolutePath());
+        project.addCompileSourceRoot(outputDir.getAbsolutePath());
     }
 }
