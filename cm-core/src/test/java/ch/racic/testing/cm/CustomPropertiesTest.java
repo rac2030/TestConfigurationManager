@@ -17,6 +17,10 @@ import org.testng.annotations.*;
 
 import java.util.Properties;
 
+import static ch.racic.testing.cm.config.C.SimpleTest.CUSTOM_VARIABLE_FOR_SIMPLETEST;
+import static ch.racic.testing.cm.config.G.test;
+
+
 /**
  * Created by rac on 05.04.15.
  */
@@ -34,6 +38,9 @@ public class CustomPropertiesTest {
         Properties props = new Properties();
         props.put("runtime.properties.addition", "working");
         cfg.loadCustomClassProperties(props);
+        String test2 = cfg.get(test.CONFIG_TEST_ENV);
+        String test3 = cfg.get(CUSTOM_VARIABLE_FOR_SIMPLETEST);
+
     }
 
     @Test
@@ -45,16 +52,16 @@ public class CustomPropertiesTest {
     @Parameters({"environment.code", "environment.locale"})
     public void simpleTest(@Optional String environmentCodeIn, @Optional String environmentLocale) {
         cfg.logAvailableProperties();
-        log.debug("Config loaded from: " + cfg.get("config.test.loadedfrom"));
+        log.debug("Config loaded from: " + cfg.get(test.CONFIG_TEST_LOADEDFROM));
         String environmentCode = environmentCodeIn;
         if (environmentCode == null || environmentCode.contentEquals("envBlaBla")) environmentCode = "global";
         String environmentLocaleAppendix = "";
         if (environmentLocale != null) environmentLocaleAppendix = "_" + environmentLocale;
-        Assert.assertEquals(cfg.get("config.test.loadedfrom"), environmentCode + "/test" + environmentLocaleAppendix + ".properties", "config.test.loadedfrom gets overwritten by env folder or taken from global if no environment is specified");
-        Assert.assertEquals(cfg.get("config.test.global"), "global", "config.test.global gets not overwritten");
-        Assert.assertEquals(cfg.get("config.test.env"), environmentCode, "config.test.env gets overwritten by env folder or taken from global if no environment is specified");
-        Assert.assertEquals(cfg.get("config.test.global.class"), "SimpleTest.global", "config.test.global.class gets not overwritten");
-        Assert.assertEquals(cfg.get("config.test.env.class"), "SimpleTest." + environmentCode, "config.test.env.class gets overwritten by env folder or taken from global if no environment is specified");
+        Assert.assertEquals(cfg.get(test.CONFIG_TEST_LOADEDFROM), environmentCode + "/test" + environmentLocaleAppendix + ".properties", "config.test.loadedfrom gets overwritten by env folder or taken from global if no environment is specified");
+        Assert.assertEquals(cfg.get(test.CONFIG_TEST_GLOBAL), "global", "config.test.global gets not overwritten");
+        Assert.assertEquals(cfg.get(test.CONFIG_TEST_ENV), environmentCode, "config.test.env gets overwritten by env folder or taken from global if no environment is specified");
+        Assert.assertEquals(cfg.get(test.CONFIG_TEST_GLOBAL_CLASS), "SimpleTest.global", "config.test.global.class gets not overwritten");
+        Assert.assertEquals(cfg.get(test.CONFIG_TEST_ENV_CLASS), "SimpleTest." + environmentCode, "config.test.env.class gets overwritten by env folder or taken from global if no environment is specified");
         Assert.assertEquals(cfg.get("environment.code"), environmentCodeIn, "Value from config is same as value directly from parameter injected by TestNG");
     }
 
@@ -72,8 +79,8 @@ public class CustomPropertiesTest {
         else if (OS.isFamilyUnix()) osExpected = "Linux";
         else if (OS.isFamilyMac()) osExpected = "Mac";
 
-        Assert.assertNotEquals(cfg.get("detected.os"), "None", "OS property has been loaded and is not default");
-        Assert.assertEquals(cfg.get("detected.os"), osExpected, "OS property contains the value we expect from the current runtime system");
+        Assert.assertNotEquals(cfg.get(test.DETECTED_OS), "None", "OS property has been loaded and is not default");
+        Assert.assertEquals(cfg.get(test.DETECTED_OS), osExpected, "OS property contains the value we expect from the current runtime system");
     }
 
 

@@ -8,12 +8,12 @@ package ch.racic.testing.cm;
 
 import com.google.inject.Inject;
 
+import static ch.racic.testing.cm.config.C.TestObject.TESTOBJECT_CONF;
+
 /**
  * Created by rac on 06.04.15.
  */
 public class TestObject {
-
-    public static final String TESTOBJECT_CONF = "testobject.conf";
 
     @Inject
     ConfigProvider cfg;
