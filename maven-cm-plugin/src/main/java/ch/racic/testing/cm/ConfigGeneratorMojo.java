@@ -7,12 +7,18 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Goal which touches a timestamp file.
@@ -66,7 +72,11 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         List<File> configDirs = filterResources(resources);
         // parse global config properties
         // Generate a class G which contains a static inner class for each property file with constants from the property names
-        generateG(configDirs);
+        try {
+            generateG(configDirs);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error while generating G class from template", e);
+        }
         // find class folders
         List<File> classConfigDirs = filterClassResources(configDirs);
         // Generate a class C which contains a static inner class for each class config with constants from property names
@@ -83,24 +93,43 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     }
 
-    private void generateG(List<File> configDirs) {
+    private void generateG(List<File> configDirs) throws IOException {
         //TODO generate a class G which contains a static inner class for each property file with constants from the property names
+        Map<String, Properties> innerClasses = new HashMap<String, Properties>();
+
         for (File configDir : configDirs) {
             //Iterate over all config dirs and look for properties
             for (File propFile : configDir.listFiles(ConfigProvider.propertiesFilter)) {
-                // TODO create inner class with property file name
-                String className = propFile.getName();
+                // create inner class with property file name
                 Properties classProps = new Properties();
                 try {
                     classProps.load(FileUtils.openInputStream(propFile));
                 } catch (IOException e) {
-                    //TODO handle if a property file can not be parsed
-                    e.printStackTrace();
+                    getLog().error("Could not read properties file from " + propFile.getAbsolutePath(), e);
+                    //continue with the next
+                    // TODO should we abort here or just log the error and continue?
                 }
-
+                innerClasses.put(propFile.getName(), classProps);
             }
         }
 
+        // generate class from velocity template G.vm
+        VelocityContext context = new VelocityContext();
+        context.put("packageName", basePackage);
+        context.put("classList", innerClasses);
+
+        VelocityEngine ve = new VelocityEngine();
+        ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
+        ve.setProperty("file.resource.loader.class", ClasspathResourceLoader.class.getName());
+        ve.init();
+        Template template = Velocity.getTemplate("ch.racic.testing.cm/G.vm");
+
+        File outputFile = new File(outputDir, "G.java");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+
+        template.merge(context, writer);
+        writer.flush();
+        writer.close();
     }
 
     private List<File> filterClassResources(List<File> configDirs) {

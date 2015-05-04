@@ -1,0 +1,18 @@
+package $packageName
+
+/** Automatically generated from properties found in global folder **/
+public class G {
+
+    private G() {
+        throw new AssertionError();
+    }
+
+    #foreach( $className in $classList.keySet() )
+    public static class $className {
+        #foreach( $propsName in $classList.get($className).stringPropertyNames() )
+        public static final String $propsName.replaceAll("\\.", "_").toUpperCase() = "$propsName";
+        #end
+    }
+
+    #end
+}
