@@ -80,7 +80,11 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         // find class folders
         List<File> classConfigDirs = filterClassResources(configDirs);
         // Generate a class C which contains a static inner class for each class config with constants from property names
-        generateC(classConfigDirs);
+        try {
+            generateC(classConfigDirs);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error while generating C class from template", e);
+        }
 
         // After all is generated, let's add it to the corresponding source root
         if (testSourceOnly) loadGeneratedTestSources();
