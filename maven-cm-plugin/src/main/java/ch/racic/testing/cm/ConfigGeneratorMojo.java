@@ -1,5 +1,6 @@
 package ch.racic.testing.cm;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -8,8 +9,10 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Goal which touches a timestamp file.
@@ -82,6 +85,21 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     private void generateG(List<File> configDirs) {
         //TODO generate a class G which contains a static inner class for each property file with constants from the property names
+        for (File configDir : configDirs) {
+            //Iterate over all config dirs and look for properties
+            for (File propFile : configDir.listFiles(ConfigProvider.propertiesFilter)) {
+                // TODO create inner class with property file name
+                String className = propFile.getName();
+                Properties classProps = new Properties();
+                try {
+                    classProps.load(FileUtils.openInputStream(propFile));
+                } catch (IOException e) {
+                    //TODO handle if a property file can not be parsed
+                    e.printStackTrace();
+                }
+
+            }
+        }
 
     }
 

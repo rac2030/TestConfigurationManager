@@ -42,7 +42,7 @@ public class ConfigProvider {
 
     private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass, propsOS;
 
-    private FilenameFilter propertiesFilter = new FilenameFilter() {
+    public static FilenameFilter propertiesFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
             if (
             /** Filter locale bundles as we will construct the ResourceBundle with the default file **/
