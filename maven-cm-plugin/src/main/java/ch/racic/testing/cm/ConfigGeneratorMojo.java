@@ -88,16 +88,10 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     }
 
-    private void generateC(List<File> classConfigDirs) {
+    private void generateC(List<File> classConfigDirs) throws IOException {
         // TODO Generate a class C which contains a static inner class for each class config with constants from property names
-
-    }
-
-    private void generateG(List<File> configDirs) throws IOException {
-        //TODO generate a class G which contains a static inner class for each property file with constants from the property names
         Map<String, Properties> innerClasses = new HashMap<String, Properties>();
-
-        for (File configDir : configDirs) {
+        for (File configDir : classConfigDirs) {
             //Iterate over all config dirs and look for properties
             for (File propFile : configDir.listFiles(ConfigProvider.propertiesFilter)) {
                 // create inner class with property file name
@@ -112,9 +106,38 @@ public class ConfigGeneratorMojo extends AbstractMojo {
                 innerClasses.put(propFile.getName(), classProps);
             }
         }
+        // generate class from velocity template ConstantsClass.vm
+        generateFileFromTemplate("ConstantsClass.vm", "C", innerClasses);
+    }
 
-        // generate class from velocity template G.vm
+    private void generateG(List<File> configDirs) throws IOException {
+        // generate a class G which contains a static inner class for each property file with constants from the property names
+        Map<String, Properties> innerClasses = new HashMap<String, Properties>();
+
+        for (File configDir : configDirs) {
+            //Iterate over all config dirs and look for properties
+            for (File propFile : configDir.listFiles(ConfigProvider.propertiesFilter)) {
+                // create inner class with property file name
+                Properties classProps = new Properties();
+                try {
+                    classProps.load(FileUtils.openInputStream(propFile));
+                } catch (IOException e) {
+                    getLog().error("Could not read properties file from " + propFile.getAbsolutePath(), e);
+                    //continue with the next
+                    // TODO should we abort here or just log the error and continue?
+                }
+                //TODO what happens if this property already exists in another config dir?
+                innerClasses.put(propFile.getName(), classProps);
+            }
+        }
+
+        // generate class from velocity template ConstantsClass.vm
+        generateFileFromTemplate("ConstantsClass.vm", "G", innerClasses);
+    }
+
+    private void generateFileFromTemplate(String templateName, String generatedClassName, Map<String, Properties> innerClasses) throws IOException {
         VelocityContext context = new VelocityContext();
+        context.put("generatedClassName", generatedClassName);
         context.put("packageName", basePackage);
         context.put("classList", innerClasses);
 
@@ -122,9 +145,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
         ve.setProperty("file.resource.loader.class", ClasspathResourceLoader.class.getName());
         ve.init();
-        Template template = Velocity.getTemplate("ch.racic.testing.cm/G.vm");
+        Template template = Velocity.getTemplate("ch.racic.testing.cm/" + templateName);
 
-        File outputFile = new File(outputDir, "G.java");
+        File outputFile = new File(outputDir, generatedClassName + ".java");
         BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 
         template.merge(context, writer);

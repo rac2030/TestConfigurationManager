@@ -1,9 +1,9 @@
 package $packageName
 
 /** Automatically generated from properties found in global folder **/
-public class G {
+public class $generatedClassName {
 
-    private G() {
+    private $generatedClassName() {
         throw new AssertionError();
     }
 
