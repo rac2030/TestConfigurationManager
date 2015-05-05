@@ -14,55 +14,6 @@
     <name>Test Configuration Manager</name>
     <packaging>jar</packaging>
 
-    <description>A configuration manager tailored for functional testing with TestNG.</description>
-    <url>https://github.com/rac2030/TestConfigurationManager</url>
-
-    <issueManagement>
-        <url>https://github.com/rac2030/TestConfigurationManager/issues</url>
-        <system>GitHub Issues</system>
-    </issueManagement>
-
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <scm>
-        <url>https://github.com/rac2030/TestConfigurationManager</url>
-        <connection>scm:git:git://github.com/rac2030/TestConfigurationManager.git</connection>
-        <developerConnection>scm:git:git@github.com:rac2030/TestConfigurationManager.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
-
-    <developers>
-        <developer>
-            <email>m@rac.su</email>
-            <name>Michel Racic</name>
-            <url>https://github.com/rac2030</url>
-            <id>rac2030</id>
-        </developer>
-    </developers>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>sonatype-nexus-staging</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.google.inject</groupId>
