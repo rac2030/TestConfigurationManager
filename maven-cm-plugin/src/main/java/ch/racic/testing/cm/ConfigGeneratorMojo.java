@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
@@ -64,7 +65,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
     )
     private boolean testSourceOnly;
 
-    public void execute() throws MojoExecutionException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         // Get resource directories, there could be more than 1 and on main and test level
         List<Resource> resources = project.getTestResources();
         resources.addAll(project.getResources());
@@ -92,7 +93,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     }
 
-    private void generateC(List<File> classConfigDirs) throws IOException {
+    private void generateC(List<File> classConfigDirs) throws IOException, MojoFailureException {
         // TODO Generate a class C which contains a static inner class for each class config with constants from property names
         Map<String, Properties> innerClasses = new HashMap<String, Properties>();
         for (File configDir : classConfigDirs) {
@@ -107,6 +108,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
                     //continue with the next
                     // TODO should we abort here or just log the error and continue?
                 }
+                if (innerClasses.containsKey(propFile.getName()))
+                    throw new MojoFailureException("Duplicate properties file found in resource paths: "
+                            + propFile.getAbsolutePath() + " and " + innerClasses.get(propFile.getName()));
                 innerClasses.put(propFile.getName(), classProps);
             }
         }
