@@ -1,5 +1,6 @@
 package ch.racic.testing.cm;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -94,7 +95,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
     }
 
     private void generateC(List<File> classConfigDirs) throws IOException, MojoFailureException {
-        // TODO Generate a class C which contains a static inner class for each class config with constants from property names
+        // Generate a class C which contains a static inner class for each class config with constants from property names
         Map<String, Properties> innerClasses = new HashMap<String, Properties>();
         for (File configDir : classConfigDirs) {
             //Iterate over all config dirs and look for properties
@@ -103,13 +104,23 @@ public class ConfigGeneratorMojo extends AbstractMojo {
                 Properties classProps = new Properties();
                 try {
                     classProps.load(FileUtils.openInputStream(propFile));
+                    // detect duplicate properties
+                    for (Properties pc : innerClasses.values()) {
+                        Sets.SetView<String> intersection = Sets.intersection(classProps.stringPropertyNames(), pc.stringPropertyNames());
+                        if (!intersection.isEmpty()) {
+                            String throwie = "Found duplicate property definitions, please don't reuse property keys for different purposes";
+                            for (String prop : intersection) throwie += " [" + prop + "]";
+                            getLog().warn(throwie);
+                        }
+                        //TODO do we also need to remove any key that is already in a global file (which means it is a override)?
+                    }
                 } catch (IOException e) {
                     getLog().error("Could not read properties file from " + propFile.getAbsolutePath(), e);
                     //continue with the next
                     // TODO should we abort here or just log the error and continue?
                 }
                 if (innerClasses.containsKey(propFile.getName()))
-                    throw new MojoFailureException("Duplicate properties file found in resource paths: "
+                    throw new MojoFailureException("Duplicate properties file found in resource paths on same layer: "
                             + propFile.getAbsolutePath() + " and " + innerClasses.get(propFile.getName()));
                 innerClasses.put(propFile.getName(), classProps);
             }
@@ -118,7 +129,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         generateFileFromTemplate("ConstantsClass.vm", "C", innerClasses);
     }
 
-    private void generateG(List<File> configDirs) throws IOException {
+    private void generateG(List<File> configDirs) throws IOException, MojoFailureException {
         // generate a class G which contains a static inner class for each property file with constants from the property names
         Map<String, Properties> innerClasses = new HashMap<String, Properties>();
 
@@ -129,12 +140,24 @@ public class ConfigGeneratorMojo extends AbstractMojo {
                 Properties classProps = new Properties();
                 try {
                     classProps.load(FileUtils.openInputStream(propFile));
+                    // detect duplicate properties
+                    for (Properties pc : innerClasses.values()) {
+                        Sets.SetView<String> intersection = Sets.intersection(classProps.stringPropertyNames(), pc.stringPropertyNames());
+                        if (!intersection.isEmpty()) {
+                            String throwie = "Found duplicate property definitions, please make keys unique over files on same layer:";
+                            for (String prop : intersection) throwie += " [" + prop + "]";
+                            throw new MojoFailureException(throwie);
+                        }
+                    }
                 } catch (IOException e) {
                     getLog().error("Could not read properties file from " + propFile.getAbsolutePath(), e);
                     //continue with the next
                     // TODO should we abort here or just log the error and continue?
                 }
-                //TODO what happens if this property already exists in another config dir?
+                // Check if the filename is duplicated in resource paths
+                if (innerClasses.containsKey(propFile.getName()))
+                    throw new MojoFailureException("Duplicate properties file found in resource paths on same layer: "
+                            + propFile.getAbsolutePath() + " and " + innerClasses.get(propFile.getName()));
                 innerClasses.put(propFile.getName(), classProps);
             }
         }
