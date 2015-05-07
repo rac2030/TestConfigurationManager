@@ -22,12 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Goal which touches a timestamp file.
- *
- * @goal touch
- * @phase process-sources
- */
 @Mojo(
         name = "generate",
         requiresProject = true,
