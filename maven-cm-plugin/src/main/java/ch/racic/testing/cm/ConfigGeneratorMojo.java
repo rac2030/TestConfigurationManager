@@ -70,6 +70,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         // Generate a class G which contains a static inner class for each property file with constants from the property names
         Properties globalProps;
         try {
+            getLog().debug("Generate global constant class");
             globalProps = generateG(configDirs);
         } catch (IOException e) {
             throw new MojoExecutionException("Error while generating G class from template", e);
@@ -78,6 +79,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         List<File> classConfigDirs = filterClassResources(configDirs);
         // Generate a class C which contains a static inner class for each class config with constants from property names
         try {
+            getLog().debug("Generate class specific constant class");
             generateC(classConfigDirs, globalProps);
         } catch (IOException e) {
             throw new MojoExecutionException("Error while generating C class from template", e);
@@ -93,8 +95,10 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         // Generate a class C which contains a static inner class for each class config with constants from property names
         Map<String, Properties> innerClasses = new HashMap<String, Properties>();
         for (File configDir : classConfigDirs) {
+            getLog().debug("Scanning config directory at path " + configDir.getAbsolutePath());
             //Iterate over all config dirs and look for properties
             for (File propFile : configDir.listFiles(ConfigProvider.propertiesFilter)) {
+                getLog().debug("Parsing property file " + propFile.getName());
                 // create inner class with property file name
                 Properties classProps = new Properties();
                 try {
@@ -189,6 +193,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         template.merge(context, writer);
         writer.flush();
         writer.close();
+        getLog().debug("Generate java class " + outputFile.getAbsolutePath());
     }
 
     private List<File> filterClassResources(List<File> configDirs) {
