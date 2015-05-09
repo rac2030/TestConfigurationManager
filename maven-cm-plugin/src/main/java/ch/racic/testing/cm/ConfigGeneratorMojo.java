@@ -68,8 +68,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         List<File> configDirs = filterResources(resources);
         // parse global config properties
         // Generate a class G which contains a static inner class for each property file with constants from the property names
+        Properties globalProps;
         try {
-            generateG(configDirs);
+            globalProps = generateG(configDirs);
         } catch (IOException e) {
             throw new MojoExecutionException("Error while generating G class from template", e);
         }
@@ -77,7 +78,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         List<File> classConfigDirs = filterClassResources(configDirs);
         // Generate a class C which contains a static inner class for each class config with constants from property names
         try {
-            generateC(classConfigDirs);
+            generateC(classConfigDirs, globalProps);
         } catch (IOException e) {
             throw new MojoExecutionException("Error while generating C class from template", e);
         }
@@ -88,7 +89,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     }
 
-    private void generateC(List<File> classConfigDirs) throws IOException, MojoFailureException {
+    private void generateC(List<File> classConfigDirs, Properties globalProps) throws IOException, MojoFailureException {
         // Generate a class C which contains a static inner class for each class config with constants from property names
         Map<String, Properties> innerClasses = new HashMap<String, Properties>();
         for (File configDir : classConfigDirs) {
@@ -98,6 +99,13 @@ public class ConfigGeneratorMojo extends AbstractMojo {
                 Properties classProps = new Properties();
                 try {
                     classProps.load(FileUtils.openInputStream(propFile));
+                    // Remove properties which are already contained in teh global file
+                    for (String key : classProps.stringPropertyNames()) {
+                        if (globalProps.containsKey(key)) {
+                            classProps.remove(key);
+                            getLog().debug("Found global properties override in class file " + propFile.getName() + " [" + key + "]");
+                        }
+                    }
                     // detect duplicate properties
                     for (Properties pc : innerClasses.values()) {
                         Sets.SetView<String> intersection = Sets.intersection(classProps.stringPropertyNames(), pc.stringPropertyNames());
@@ -106,7 +114,6 @@ public class ConfigGeneratorMojo extends AbstractMojo {
                             for (String prop : intersection) throwie += " [" + prop + "]";
                             getLog().warn(throwie);
                         }
-                        //TODO do we also need to remove any key that is already in a global file (which means it is a override)?
                     }
                 } catch (IOException e) {
                     getLog().error("Could not read properties file from " + propFile.getAbsolutePath(), e);
@@ -123,10 +130,10 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         generateFileFromTemplate("ConstantsClass.vm", "C", innerClasses);
     }
 
-    private void generateG(List<File> configDirs) throws IOException, MojoFailureException {
+    private Properties generateG(List<File> configDirs) throws IOException, MojoFailureException {
         // generate a class G which contains a static inner class for each property file with constants from the property names
         Map<String, Properties> innerClasses = new HashMap<String, Properties>();
-
+        Properties ret = new Properties();
         for (File configDir : configDirs) {
             //Iterate over all config dirs and look for properties
             for (File propFile : configDir.listFiles(ConfigProvider.propertiesFilter)) {
@@ -134,6 +141,8 @@ public class ConfigGeneratorMojo extends AbstractMojo {
                 Properties classProps = new Properties();
                 try {
                     classProps.load(FileUtils.openInputStream(propFile));
+                    // Add the properties for returning all the keys
+                    ret.putAll(classProps);
                     // detect duplicate properties
                     for (Properties pc : innerClasses.values()) {
                         Sets.SetView<String> intersection = Sets.intersection(classProps.stringPropertyNames(), pc.stringPropertyNames());
@@ -158,6 +167,8 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
         // generate class from velocity template ConstantsClass.vm
         generateFileFromTemplate("ConstantsClass.vm", "G", innerClasses);
+
+        return ret;
     }
 
     private void generateFileFromTemplate(String templateName, String generatedClassName, Map<String, Properties> innerClasses) throws IOException {
