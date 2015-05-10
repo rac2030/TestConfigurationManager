@@ -4,8 +4,6 @@ import org.apache.maven.plugin.testing.MojoRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.File;
-
 public class ConfigGeneratorMojoTest {
 
     @Rule
@@ -22,7 +20,7 @@ public class ConfigGeneratorMojoTest {
     @Test
     public void testSomething()
             throws Exception {
-        File pom = rule.getTestFile("src/test/resources/unit/project-to-test/pom.xml");
+        /*File pom = rule.getTestFile("src/test/resources/unit/project-to-test/pom.xml");
         assertNotNull(pom);
         assertTrue(pom.exists());
 
@@ -30,6 +28,7 @@ public class ConfigGeneratorMojoTest {
         assertNotNull(myMojo);
         myMojo.execute();
 
-        ...
+        ...*/
+        //TODO How to execute the mojo and check if all files are generated correctly?
     }
 }
