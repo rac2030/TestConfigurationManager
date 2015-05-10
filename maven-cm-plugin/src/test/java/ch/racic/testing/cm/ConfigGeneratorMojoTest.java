@@ -1,5 +1,6 @@
 package ch.racic.testing.cm;
 
+import org.apache.maven.plugin.testing.MojoRule;
 import org.junit.Rule;
 import org.junit.Test;
 
