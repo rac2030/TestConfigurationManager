@@ -1,6 +1,7 @@
 package ch.racic.testing.cm;
 
 import org.apache.maven.plugin.testing.MojoRule;
+import org.apache.maven.plugin.testing.resources.TestResources;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -16,6 +17,10 @@ public class ConfigGeneratorMojoTest {
         protected void after() {
         }
     };
+
+    @Rule
+    public TestResources resources = new TestResources();
+
 
     @Test
     public void testSomething()
