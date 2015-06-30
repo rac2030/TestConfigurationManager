@@ -6,7 +6,7 @@
 
     <groupId>ch.racic.testing</groupId>
     <artifactId>test-configuration-manager-parent</artifactId>
-    <version>0.9.5-SNAPSHOT</version>
+    <version>0.9.5</version>
     <name>Test Configuration Manager Parent</name>
     <packaging>pom</packaging>
 

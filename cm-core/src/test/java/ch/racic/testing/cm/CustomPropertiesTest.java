@@ -62,7 +62,7 @@ public class CustomPropertiesTest {
         Assert.assertEquals(cfg.get(test.CONFIG_TEST_ENV), environmentCode, "config.test.env gets overwritten by env folder or taken from global if no environment is specified");
         Assert.assertEquals(cfg.get(test.CONFIG_TEST_GLOBAL_CLASS), "SimpleTest.global", "config.test.global.class gets not overwritten");
         Assert.assertEquals(cfg.get(test.CONFIG_TEST_ENV_CLASS), "SimpleTest." + environmentCode, "config.test.env.class gets overwritten by env folder or taken from global if no environment is specified");
-        Assert.assertEquals(cfg.get("environment.code"), environmentCodeIn, "Value from config is same as value directly from parameter injected by TestNG");
+        Assert.assertEquals(cfg.getOptional("environment.code"), environmentCodeIn, "Value from config is same as value directly from parameter injected by TestNG");
     }
 
     @Test

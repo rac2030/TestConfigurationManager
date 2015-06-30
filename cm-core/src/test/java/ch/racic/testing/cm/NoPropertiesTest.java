@@ -48,7 +48,7 @@ public class NoPropertiesTest {
         Assert.assertEquals(cfg.get("config.test.loadedfrom"), environmentCode + "/test" + environmentLocaleAppendix + ".properties", "config.test.loadedfrom gets overwritten by env folder or taken from global if no environment is specified");
         Assert.assertEquals(cfg.get("config.test.global"), "global", "config.test.global gets not overwritten");
         Assert.assertEquals(cfg.get("config.test.env"), environmentCode, "config.test.env gets overwritten by env folder or taken from global if no environment is specified");
-        Assert.assertEquals(cfg.get("environment.code"), environmentCodeIn, "Value from config is same as value directly from parameter injected by TestNG");
+        Assert.assertEquals(cfg.getOptional("environment.code"), environmentCodeIn, "Value from config is same as value directly from parameter injected by TestNG");
         Assert.assertEquals(cfg.get("runtime.properties.addition"), "working", "Runtime properties have been set");
     }
 

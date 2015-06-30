@@ -173,12 +173,23 @@ public class ConfigProvider {
     }
 
     /**
+     * Get the property value for this key, throws an exception if key is not existing.
+     *
+     * @param key
+     * @return
+     * @throws NoSuchElementException
+     */
+    public String get(String key) {
+        return getRequired(key);
+    }
+
+    /**
      * Get the property value for this key, return null if it's not existing.
      *
      * @param key
      * @return value
      */
-    public String get(String key) {
+    public String getOptional(String key) {
         return get(key, null);
     }
 
@@ -230,7 +241,7 @@ public class ConfigProvider {
      */
     public String getRequired(String key) throws NoSuchElementException {
         if (contains(key))
-            return get(key);
+            return get(key, null);
         else
             throw new NoSuchElementException("Key [" + key + "] does not exist");
     }
