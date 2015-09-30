@@ -35,10 +35,13 @@ public class ConfigProvider {
 
     private List<Module> guiceModules;
 
-    public static final String CONFIG_BASE_FOLDER = "config";
+    public static String CONFIG_BASE_FOLDER = "config";
     public static final String CONFIG_GLOBAL_BASE_FOLDER = "global";
     public static final String CONFIG_CLASS_FOLDER = "class";
     public static final String CONFIG_OS_FOLDER = "os";
+
+    // External config keys
+    public static final String CONFIG_BASE_FOLDER_SYSTEM_KEY = "ch.racic.testing.cm.basefolder";
 
     private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass, propsOS;
 
@@ -57,6 +60,10 @@ public class ConfigProvider {
     }
 
     public ConfigProvider(ConfigProvider parent, ConfigEnvironment environment, Class clazz, AggregatedResourceBundle testngParams) {
+        // Check for external configuration trough System properties
+        String systemBaseFolder = System.getProperty(CONFIG_BASE_FOLDER_SYSTEM_KEY, null);
+        if (systemBaseFolder != null) CONFIG_BASE_FOLDER = systemBaseFolder;
+
         this.parentConfig = parent;
         this.environment = environment;
         // Extract class name for loading if annotation present
