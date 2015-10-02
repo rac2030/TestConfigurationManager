@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This ConfigProvider handles configuration management tailored for usage in TestNG. It maintains several layers of
@@ -44,6 +45,8 @@ public class ConfigProvider {
     public static final String CONFIG_BASE_FOLDER_SYSTEM_KEY = "ch.racic.testing.cm.basefolder";
 
     private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass, propsOS;
+    // Store arbitary objects to be passed on for injection
+    private Map<String, Object> obj;
 
     public static FilenameFilter propertiesFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
@@ -326,6 +329,15 @@ public class ConfigProvider {
             guiceModules.addAll(Arrays.asList(modules));
         }
         return this;
+    }
+
+    public void addObj(String key, Object o) {
+        if (obj == null) obj = new ConcurrentHashMap<String, Object>();
+        obj.put(key, o);
+    }
+
+    public Object getObj(String key) {
+        if (obj.containsKey(key)) return obj.get(key);
     }
 
     /**
