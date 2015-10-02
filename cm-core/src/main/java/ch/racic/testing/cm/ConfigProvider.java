@@ -331,13 +331,43 @@ public class ConfigProvider {
         return this;
     }
 
+    /**
+     * Add an arbitary object to retrieve it later in this or in one of the childs.
+     *
+     * @param key
+     * @param o
+     */
     public void addObj(String key, Object o) {
         if (obj == null) obj = new ConcurrentHashMap<String, Object>();
         obj.put(key, o);
     }
 
+    /**
+     * Add an arbitary object to the uber parent to retrieve it later in this or in one other child of the whole config
+     * tree.
+     *
+     * @param key
+     * @param o
+     */
+    public void addUberObj(String key, Object o) {
+        if (parentConfig != null) parentConfig.addUberObj(key, o);
+        // We are the uber parent so lets handle this
+        if (obj == null) obj = new ConcurrentHashMap<String, Object>();
+        obj.put(key, o);
+    }
+
+    /**
+     * Get back an arbitary object
+     *
+     * @param key
+     * @return
+     */
     public Object getObj(String key) {
-        if (obj.containsKey(key)) return obj.get(key);
+        if (obj != null && obj.containsKey(key)) return obj.get(key);
+        // Not in the local one, let's check if we have a parent and delegate the request
+        if (parentConfig != null) return parentConfig.getObj(key);
+        // Seems like we are the uber parent but don't have it so return null
+        return null;
     }
 
     /**

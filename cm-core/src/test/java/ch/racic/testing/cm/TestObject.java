@@ -22,4 +22,8 @@ public class TestObject {
         return cfg.get(TESTOBJECT_CONF);
     }
 
+    public ConfigProvider getConfigProvider() {
+        return cfg;
+    }
+
 }
