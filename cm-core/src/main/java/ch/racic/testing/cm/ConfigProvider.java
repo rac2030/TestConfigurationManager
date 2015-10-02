@@ -310,23 +310,40 @@ public class ConfigProvider {
             log.info("\tKey[" + key + "], Value[" + props.getString(key) + "]");
     }
 
-
-    public ConfigProvider setGuiceModules(List<Module> guiceModules) {
-        this.guiceModules = guiceModules;
-        return this;
+    public List<Module> getGuiceModules() {
+        if (parentConfig != null) {
+            List<Module> modules = parentConfig.getGuiceModules();
+            modules.addAll(guiceModules);
+            return modules;
+        }
+        return guiceModules;
     }
 
     public ConfigProvider addGuiceModule(Module... modules) {
-        if (parentConfig != null) {
-            // let it be added to the parent
-            parentConfig.addGuiceModule(modules);
-            return this;
-        }
         if (guiceModules == null) {
             // initialize
             guiceModules = new ArrayList<Module>(Arrays.asList(modules));
         } else {
             guiceModules.addAll(Arrays.asList(modules));
+        }
+        return this;
+    }
+
+    public ConfigProvider addGuiceModule(List<Module> modules) {
+        if (guiceModules == null) {
+            // initialize
+            guiceModules = modules;
+        } else {
+            guiceModules.addAll(modules);
+        }
+        return this;
+    }
+
+    public ConfigProvider addUberGuiceModule(List<Module> modules) {
+        if (parentConfig == null) {
+            addGuiceModule(modules);
+        } else {
+            parentConfig.addUberGuiceModule(modules);
         }
         return this;
     }

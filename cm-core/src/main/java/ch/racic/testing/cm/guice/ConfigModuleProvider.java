@@ -38,7 +38,9 @@ public class ConfigModuleProvider implements Provider<ConfigProvider> {
     }
 
     public ConfigProvider get() {
-        return new ConfigProvider(parent, env, testClass, testngParams).setGuiceModules(guiceModules);
+        ConfigProvider ret = new ConfigProvider(parent, env, testClass, testngParams);
+        if (guiceModules != null) ret.addGuiceModule(guiceModules);
+        return ret;
     }
 
 
