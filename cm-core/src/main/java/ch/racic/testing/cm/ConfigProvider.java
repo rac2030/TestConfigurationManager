@@ -315,8 +315,11 @@ public class ConfigProvider {
             List<Module> modules = parentConfig.getGuiceModules();
             modules.addAll(guiceModules);
             return modules;
+        } else if (guiceModules != null) {
+            return guiceModules;
+        } else {
+            return new ArrayList<Module>();
         }
-        return guiceModules;
     }
 
     public ConfigProvider addGuiceModule(Module... modules) {
@@ -398,18 +401,12 @@ public class ConfigProvider {
      * @return object instance
      */
     public <T> T create(Class<T> type, Module... modules) {
-        if (parentConfig == null) {
-            List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
-            if (guiceModules != null) {
-                mList.addAll(guiceModules);
-            }
-            mList.add(new ConfigModule(this, environment, type, propsTestNG));
-            Injector injector = com.google.inject.Guice.createInjector(mList);
-            return injector.getInstance(type);
-        } else {
-            // Let the root parent do the injecting
-            return parentConfig.create(type, modules);
-        }
+        List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
+        mList.addAll(getGuiceModules());
+        mList.add(new ConfigModule(this, environment, type, propsTestNG));
+        Injector injector = com.google.inject.Guice.createInjector(mList);
+        return injector.getInstance(type);
+
     }
 
 }
