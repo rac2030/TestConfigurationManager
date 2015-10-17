@@ -11,7 +11,7 @@ import ch.racic.testing.cm.guice.ConfigModule;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import org.apache.commons.exec.OS;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,17 +36,22 @@ public class ConfigProvider {
 
     private List<Module> guiceModules;
 
-    public static String CONFIG_BASE_FOLDER = "config";
+    public static final String CONFIG_BASE_FOLDER = "config";
     public static final String CONFIG_GLOBAL_BASE_FOLDER = "global";
     public static final String CONFIG_CLASS_FOLDER = "class";
     public static final String CONFIG_OS_FOLDER = "os";
 
     // External config keys
-    public static final String CONFIG_BASE_FOLDER_SYSTEM_KEY = "ch.racic.testing.cm.basefolder";
+    public static final String CONFIG_BASE_FOLDER_SYSTEM_KEY = "configBaseDirectory";
 
     private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass, propsOS;
     // Store arbitary objects to be passed on for injection
     private Map<String, Object> obj;
+
+    private Properties systemProperties;
+
+    private PropertyFileResolver propertyFileResolver;
+    private String configBaseFolder, configGlobalBaseFolder, configEnvironmentBaseFolder;
 
     public static FilenameFilter propertiesFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
@@ -63,12 +68,37 @@ public class ConfigProvider {
     }
 
     public ConfigProvider(ConfigProvider parent, ConfigEnvironment environment, Class clazz, AggregatedResourceBundle testngParams) {
-        // Check for external configuration trough System properties
-        String systemBaseFolder = System.getProperty(CONFIG_BASE_FOLDER_SYSTEM_KEY, null);
-        if (systemBaseFolder != null) CONFIG_BASE_FOLDER = systemBaseFolder;
+        this(parent, environment, clazz, testngParams, System.getProperties());
+    }
 
+    //copy constructor
+    public ConfigProvider(ConfigProvider toCopy) {
+        this.guiceModules = toCopy.guiceModules;
+        this.parentConfig = toCopy.parentConfig;
+        this.environment = toCopy.environment;
+        this.clazz = toCopy.clazz;
+        this.propsTestNG = toCopy.propsTestNG != null ? new AggregatedResourceBundle(toCopy.propsTestNG) : null;
+        this.propsOS = toCopy.propsOS != null ? new AggregatedResourceBundle(toCopy.propsOS) : null;
+        this.propsCustomClass = toCopy.propsCustomClass != null ? new AggregatedResourceBundle(toCopy.propsCustomClass) : null;
+        this.propsEnvClass = toCopy.propsEnvClass != null ? new AggregatedResourceBundle(toCopy.propsEnvClass) : null;
+        this.propsGlobalClass = toCopy.propsGlobalClass != null ? new AggregatedResourceBundle(toCopy.propsGlobalClass) : null;
+        this.propsEnv = toCopy.propsEnv != null ? new AggregatedResourceBundle(toCopy.propsEnv) : null;
+        this.propsGlobal = toCopy.propsGlobal != null ? new AggregatedResourceBundle(toCopy.propsGlobal) : null;
+        this.systemProperties = toCopy.systemProperties;
+        this.propertyFileResolver = toCopy.propertyFileResolver;
+        this.configBaseFolder = toCopy.configBaseFolder;
+        this.configGlobalBaseFolder = toCopy.configGlobalBaseFolder;
+        this.configEnvironmentBaseFolder = toCopy.configEnvironmentBaseFolder;
+        this.obj = toCopy.obj;
+    }
+
+    public ConfigProvider(ConfigProvider parent, ConfigEnvironment environment, Class clazz, AggregatedResourceBundle testngParams, Properties systemProperties) {
+        this.systemProperties = systemProperties;
         this.parentConfig = parent;
         this.environment = environment;
+
+        this.configBaseFolder = systemProperties.getProperty(CONFIG_BASE_FOLDER_SYSTEM_KEY, CONFIG_BASE_FOLDER);
+
         // Extract class name for loading if annotation present
         ClassConfig classConfig = (ClassConfig) clazz.getAnnotation(ClassConfig.class);
         if (classConfig != null && classConfig.value().length != 0) this.clazz = classConfig.value()[0].getSimpleName();
@@ -80,98 +110,70 @@ public class ConfigProvider {
     }
 
     private void loadProperties() {
-        // check that base config directory exists to be used as a base for all following actions
-        File configBaseFolder = FileUtils.toFile(getClass().getClassLoader().getResource(CONFIG_BASE_FOLDER));
-        if (!(configBaseFolder != null && configBaseFolder.exists() && configBaseFolder.isDirectory())) {
-            log.error("Configuration initialisation error", new IOException("Config folder not existing or not a directory"));
+        try {
+            this.propertyFileResolver = new PropertyFileResolver(configBaseFolder);
+        } catch (RuntimeException e) {
+            log.error("Configuration initialization error. Config folder not existing or not a directory", e);
+            throw e;
         }
-
-        // Load global base properties
-        File configGlobalBaseFolder = new File(configBaseFolder, CONFIG_GLOBAL_BASE_FOLDER);
-        if (configGlobalBaseFolder.exists() && configGlobalBaseFolder.isDirectory()) {
+        this.configGlobalBaseFolder = CONFIG_GLOBAL_BASE_FOLDER;
+        if (propertyFileResolver.resourceExists(configGlobalBaseFolder)) {
             propsGlobal = new AggregatedResourceBundle();
-            // Get list of files in global folder and load it into props
-            for (File f : configGlobalBaseFolder.listFiles(propertiesFilter)) {
-
-                log.debug("Loading PropertiesResourceBundle from " + f.getPath() + ((environment != null && environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
-                if (environment != null && environment.getLocale() != null)
-                    propsGlobal.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + f.getName().replace(".properties", ""), environment.getLocale()));
-                else
-                    propsGlobal.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + f.getName().replace(".properties", "")));
+            for (String propertyFileName : propertyFileResolver.findAllBasePropertyFilenames(configGlobalBaseFolder)) {
+                mergeOverride(configBaseFolder + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + propertyFileName, environment, propsGlobal);
             }
         } else {
             log.warn("global folder not existing, can't load default values");
         }
 
+        this.configEnvironmentBaseFolder = (environment != null) ? environment.getCode() : null;
         // Load environment base properties
-        File configEnvironmentBaseFolder = null;
-        if (environment != null) {
-            configEnvironmentBaseFolder = new File(configBaseFolder, environment.getCode());
-            if (!(configEnvironmentBaseFolder.exists() && configEnvironmentBaseFolder.isDirectory())) {
-                log.error("Configuration initialisation error", new IOException("Environment specific configuration folder does not exist for " + environment));
-            } else {
-                propsEnv = new AggregatedResourceBundle();
-                // Get list of files in environment folder and load it into props, overriding existing global properties
-                for (File f : configEnvironmentBaseFolder.listFiles(propertiesFilter)) {
-                    log.debug("Loading PropertiesResourceBundle from " + f.getPath() + ((environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
-                    if (environment.getLocale() != null)
-                        propsEnv.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", ""), environment.getLocale()));
-                    else
-                        propsEnv.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + f.getName().replace(".properties", "")));
-                }
+        if (environment != null && !propertyFileResolver.resourceExists(configEnvironmentBaseFolder)) {
+            log.error("Configuration initialisation error", new IOException("Environment specific configuration folder does not exist for " + environment));
+        } else {
+            propsEnv = new AggregatedResourceBundle();
+            for (String propertyFileName : propertyFileResolver.findAllBasePropertyFilenames(configEnvironmentBaseFolder)) {
+                mergeOverride(configBaseFolder + "." + environment.getCode() + "." + propertyFileName, environment, propsEnv);
             }
         }
 
         // Load global class properties
-        if (configGlobalBaseFolder.exists() && configGlobalBaseFolder.isDirectory() && clazz != null) {
-            // Check if a class file exists
-            File classProps = new File(configGlobalBaseFolder, CONFIG_CLASS_FOLDER + "/" + clazz + ".properties");
-            if (classProps.exists() && classProps.isFile()) {
-                propsGlobalClass = new AggregatedResourceBundle();
-                // It exists, load it into props
-                log.debug("Loading PropertiesResourceBundle from " + classProps.getPath() + ((environment != null && environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
-                if (environment != null && environment.getLocale() != null)
-                    propsGlobalClass.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment.getLocale()));
-                else
-                    propsGlobalClass.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz));
-            }
+        if (configGlobalBaseFolder != null && propertyFileResolver.findAllBasePropertyFilenames(configGlobalBaseFolder + "/" + CONFIG_CLASS_FOLDER).contains(clazz)) {
+            propsGlobalClass = new AggregatedResourceBundle();
+            mergeOverride(configBaseFolder + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment, propsGlobalClass);
         }
 
         // Load environment class properties
-        if (configEnvironmentBaseFolder != null && clazz != null) {
-            // Check if a class file exists
-            File classProps = new File(configEnvironmentBaseFolder, CONFIG_CLASS_FOLDER + "/" + clazz + ".properties");
-            if (classProps.exists() && classProps.isFile()) {
-                propsEnvClass = new AggregatedResourceBundle();
-                // It exists, load it into props
-                log.debug("Loading PropertiesResourceBundle from " + classProps.getPath() + ((environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
-                if (environment.getLocale() != null)
-                    propsEnvClass.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment.getLocale()));
-                else
-                    propsEnvClass.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + environment.getCode() + "." + CONFIG_CLASS_FOLDER + "." + clazz));
-            }
+        if (configEnvironmentBaseFolder != null && clazz != null && propertyFileResolver.findAllBasePropertyFilenames(configEnvironmentBaseFolder + "/" + CONFIG_CLASS_FOLDER).contains(clazz)) {
+            propsEnvClass = new AggregatedResourceBundle();
+            mergeOverride(configBaseFolder + "." + environment.getCode() + "." + CONFIG_CLASS_FOLDER + "." + clazz, environment, propsEnvClass);
         }
-
-        loadOSProperties(configBaseFolder);
-
+        String detectedOS = getDetectedOS();
+        propsOS = new AggregatedResourceBundle();
+        if (detectedOS != null && propertyFileResolver.findAllBasePropertyFilenames(CONFIG_OS_FOLDER).contains(detectedOS)) {
+            propsOS.mergeOverride(ResourceBundle.getBundle(configBaseFolder + "." + CONFIG_OS_FOLDER + "." + detectedOS));
+        }
     }
 
-    private void loadOSProperties(File configBaseFolder) {
-        String detectedOS = null;
-        propsOS = new AggregatedResourceBundle();
-        if (OS.isFamilyWindows()) {
-            detectedOS = "windows";
-        } else if (OS.isFamilyUnix()) {
-            detectedOS = "linux";
-        } else if (OS.isFamilyMac()) {
-            detectedOS = "mac";
+    private static void mergeOverride(String propertyPath, ConfigEnvironment environment, AggregatedResourceBundle bundle) {
+        log.debug("Loading PropertiesResourceBundle from " + propertyPath + ((environment != null && environment.getLocale() != null) ? " using locale " + environment.getLocale() : ""));
+        if (environment != null && environment.getLocale() != null) {
+            bundle.mergeOverride(ResourceBundle.getBundle(propertyPath, environment.getLocale()));
+        } else {
+            bundle.mergeOverride(ResourceBundle.getBundle(propertyPath));
         }
-        if (detectedOS != null) {
-            File osProps = new File(configBaseFolder, CONFIG_OS_FOLDER + "/" + detectedOS + ".properties");
-            if (osProps.exists() && osProps.isFile())
-                propsOS.mergeOverride(ResourceBundle.getBundle(CONFIG_BASE_FOLDER + "." + CONFIG_OS_FOLDER + "." + detectedOS));
-        }
+    }
 
+    private String getDetectedOS() {
+        if (OS.isFamilyWindows()) {
+            return "windows";
+        } else if (OS.isFamilyUnix()) {
+            return "linux";
+        } else if (OS.isFamilyMac()) {
+            return "mac";
+        } else {
+            return null;
+        }
     }
 
     public ConfigEnvironment getEnvironment() {
@@ -283,6 +285,31 @@ public class ConfigProvider {
     public void loadCustomClassProperties(Properties custom) {
         if (propsCustomClass == null) propsCustomClass = new AggregatedResourceBundle();
         propsCustomClass.mergeOverride(custom);
+    }
+
+    public void loadCustomClassProperties(String propertyFilename) {
+        if (StringUtils.isBlank(propertyFilename)) {
+            throw new IllegalArgumentException("Provided propertyFilename must not be blank");
+        }
+        propertyFilename = StringUtils.removeEnd(propertyFilename, ".properties");
+        boolean found = false;
+
+        // Load global class properties
+        if (configGlobalBaseFolder != null && propertyFileResolver.findAllBasePropertyFilenames(configGlobalBaseFolder + "/" + CONFIG_CLASS_FOLDER).contains(propertyFilename)) {
+            propsGlobalClass = propsGlobalClass == null ? new AggregatedResourceBundle() : propsGlobalClass;
+            mergeOverride(configBaseFolder + "." + CONFIG_GLOBAL_BASE_FOLDER + "." + CONFIG_CLASS_FOLDER + "." + propertyFilename, environment, propsGlobal);
+            found = true;
+        }
+
+        // Load environment class properties
+        if (configEnvironmentBaseFolder != null && propertyFilename != null && propertyFileResolver.findAllBasePropertyFilenames(configEnvironmentBaseFolder + "/" + CONFIG_CLASS_FOLDER).contains(propertyFilename)) {
+            propsEnvClass = propsEnvClass == null ? new AggregatedResourceBundle() : propsEnvClass;
+            mergeOverride(configBaseFolder + "." + environment.getCode() + "." + CONFIG_CLASS_FOLDER + "." + propertyFilename, environment, propsEnvClass);
+            found = true;
+        }
+        if (!found) {
+            throw new IllegalArgumentException("Provided named property file has not been found: " + propertyFilename);
+        }
     }
 
     /**
@@ -406,7 +433,5 @@ public class ConfigProvider {
         mList.add(new ConfigModule(this, environment, type, propsTestNG));
         Injector injector = com.google.inject.Guice.createInjector(mList);
         return injector.getInstance(type);
-
     }
-
 }
