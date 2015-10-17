@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This ConfigProvider handles configuration management tailored for usage in TestNG. It maintains several layers of
@@ -35,12 +36,17 @@ public class ConfigProvider {
 
     private List<Module> guiceModules;
 
-    public static final String CONFIG_BASE_FOLDER = "config";
+    public static String CONFIG_BASE_FOLDER = "config";
     public static final String CONFIG_GLOBAL_BASE_FOLDER = "global";
     public static final String CONFIG_CLASS_FOLDER = "class";
     public static final String CONFIG_OS_FOLDER = "os";
 
+    // External config keys
+    public static final String CONFIG_BASE_FOLDER_SYSTEM_KEY = "ch.racic.testing.cm.basefolder";
+
     private AggregatedResourceBundle propsGlobal, propsEnv, propsGlobalClass, propsEnvClass, propsTestNG, propsCustomClass, propsOS;
+    // Store arbitary objects to be passed on for injection
+    private Map<String, Object> obj;
 
     public static FilenameFilter propertiesFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
@@ -57,6 +63,10 @@ public class ConfigProvider {
     }
 
     public ConfigProvider(ConfigProvider parent, ConfigEnvironment environment, Class clazz, AggregatedResourceBundle testngParams) {
+        // Check for external configuration trough System properties
+        String systemBaseFolder = System.getProperty(CONFIG_BASE_FOLDER_SYSTEM_KEY, null);
+        if (systemBaseFolder != null) CONFIG_BASE_FOLDER = systemBaseFolder;
+
         this.parentConfig = parent;
         this.environment = environment;
         // Extract class name for loading if annotation present
@@ -300,18 +310,19 @@ public class ConfigProvider {
             log.info("\tKey[" + key + "], Value[" + props.getString(key) + "]");
     }
 
-
-    public ConfigProvider setGuiceModules(List<Module> guiceModules) {
-        this.guiceModules = guiceModules;
-        return this;
+    public List<Module> getGuiceModules() {
+        if (parentConfig != null) {
+            List<Module> modules = parentConfig.getGuiceModules();
+            modules.addAll(guiceModules);
+            return modules;
+        } else if (guiceModules != null) {
+            return guiceModules;
+        } else {
+            return new ArrayList<Module>();
+        }
     }
 
     public ConfigProvider addGuiceModule(Module... modules) {
-        if (parentConfig != null) {
-            // let it be added to the parent
-            parentConfig.addGuiceModule(modules);
-            return this;
-        }
         if (guiceModules == null) {
             // initialize
             guiceModules = new ArrayList<Module>(Arrays.asList(modules));
@@ -319,6 +330,64 @@ public class ConfigProvider {
             guiceModules.addAll(Arrays.asList(modules));
         }
         return this;
+    }
+
+    public ConfigProvider addGuiceModule(List<Module> modules) {
+        if (guiceModules == null) {
+            // initialize
+            guiceModules = modules;
+        } else {
+            guiceModules.addAll(modules);
+        }
+        return this;
+    }
+
+    public ConfigProvider addUberGuiceModule(List<Module> modules) {
+        if (parentConfig == null) {
+            addGuiceModule(modules);
+        } else {
+            parentConfig.addUberGuiceModule(modules);
+        }
+        return this;
+    }
+
+    /**
+     * Add an arbitary object to retrieve it later in this or in one of the childs.
+     *
+     * @param key
+     * @param o
+     */
+    public void addObj(String key, Object o) {
+        if (obj == null) obj = new ConcurrentHashMap<String, Object>();
+        obj.put(key, o);
+    }
+
+    /**
+     * Add an arbitary object to the uber parent to retrieve it later in this or in one other child of the whole config
+     * tree.
+     *
+     * @param key
+     * @param o
+     */
+    public void addUberObj(String key, Object o) {
+        if (parentConfig != null) parentConfig.addUberObj(key, o);
+        // We are the uber parent so lets handle this
+        if (obj == null) obj = new ConcurrentHashMap<String, Object>();
+        obj.put(key, o);
+    }
+
+    /**
+     * Get back an arbitary object
+     *
+     * @param key
+     * @return
+     */
+    public Object getObj(String key) {
+        if (obj != null && obj.containsKey(key)) return obj.get(key);
+        // Not in the local one, let's check if we have a parent and delegate the request
+        if (parentConfig != null) return parentConfig.getObj(key);
+        // Seems like we are the uber parent but don't have it so return null
+        return null;
     }
 
     /**
@@ -332,18 +401,12 @@ public class ConfigProvider {
      * @return object instance
      */
     public <T> T create(Class<T> type, Module... modules) {
-        if (parentConfig == null) {
-            List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
-            if (guiceModules != null) {
-                mList.addAll(guiceModules);
-            }
-            mList.add(new ConfigModule(this, environment, type, propsTestNG));
-            Injector injector = com.google.inject.Guice.createInjector(mList);
-            return injector.getInstance(type);
-        } else {
-            // Let the root parent do the injecting
-            return parentConfig.create(type, modules);
-        }
+        List<Module> mList = new ArrayList<Module>(Arrays.asList(modules));
+        mList.addAll(getGuiceModules());
+        mList.add(new ConfigModule(this, environment, type, propsTestNG));
+        Injector injector = com.google.inject.Guice.createInjector(mList);
+        return injector.getInstance(type);
+
     }
 
 }
