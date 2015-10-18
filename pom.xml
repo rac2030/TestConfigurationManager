@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>cm-config-for-unit-test</module>
         <module>cm-core</module>
         <module>maven-cm-plugin</module>
     </modules>

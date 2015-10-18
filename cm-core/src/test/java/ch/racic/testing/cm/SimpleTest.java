@@ -22,27 +22,37 @@ public class SimpleTest {
 
     private static final Logger log = LogManager.getLogger(SimpleTest.class);
 
-    ConfigProvider cfg;
-    ConfigEnvironment env;
-
-    @BeforeClass
-    public void beforeClass(ITestContext iTestContext) throws IOException {
-        log.entry(iTestContext);
-        env = new ConfigEnvironment("Test environment 1", "Just for testing the config provider", "env1");
-        cfg = new ConfigProvider(env, this.getClass());
+    public ConfigProvider getCfg() throws IOException {
+        ConfigEnvironment env = new ConfigEnvironment("Test environment 1", "Just for testing the config provider", "env1");
+        return new ConfigProvider(env, this.getClass());
     }
 
-
     @Test
-    public void simpleTest() {
-        cfg.logAvailableProperties();
+    public void simpleTest() throws Exception {
+        ConfigProvider cfg = getCfg();
         log.debug("Config loaded from: " + cfg.get("config.test.loadedfrom"));
         Assert.assertEquals(cfg.get("config.test.loadedfrom"), "env1/test.properties", "config.test.loadedfrom gets overwritten by env folder");
         Assert.assertEquals(cfg.get("config.test.global"), "global", "config.test.global gets not overwritten");
         Assert.assertEquals(cfg.get("config.test.env"), "env1", "config.test.env gets overwritten by env folder");
         Assert.assertEquals(cfg.get("config.test.global.class"), "SimpleTest.global", "config.test.global.class gets not overwritten");
         Assert.assertEquals(cfg.get("config.test.env.class"), "SimpleTest.env1", "config.test.env.class gets overwritten by env folder");
-
     }
 
+    @Test
+    public void readOnDemandTest() throws Exception {
+        ConfigProvider cfg = getCfg();
+        Assert.assertEquals(cfg.getOptional("runtime.loaded"), null, "property should not yet be available");
+        cfg.loadCustomClassProperties("OnDemandTest");
+        Assert.assertEquals(cfg.getOptional("runtime.loaded"), "env1/class/OnDemandTest.properties", "property should become available");
+    }
+
+    @Test
+    public void copyConstructorTest() throws Exception {
+        ConfigProvider cfg = getCfg();
+        Assert.assertEquals(cfg.getOptional("runtime.loaded"), null, "property should not yet be available");
+        ConfigProvider cfgCopy = new ConfigProvider(cfg);
+        cfgCopy.loadCustomClassProperties("OnDemandTest");
+        Assert.assertEquals(cfgCopy.getOptional("runtime.loaded"), "env1/class/OnDemandTest.properties", "property should become available in copied config");
+        Assert.assertEquals(cfg.getOptional("runtime.loaded"), null, "property should remain unavailable in original config");
+    }
 }

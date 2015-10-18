@@ -36,6 +36,12 @@ public class AggregatedResourceBundle extends ResourceBundle {
     public AggregatedResourceBundle() {
     }
 
+    public AggregatedResourceBundle(AggregatedResourceBundle toCopy) {
+        if (toCopy!= null && toCopy.contents!=null) {
+            this.contents.putAll(toCopy.contents);
+        }
+    }
+
     /**
      * Merge the new bundle into the existing while overriding already existing keys.
      *
@@ -54,6 +60,16 @@ public class AggregatedResourceBundle extends ResourceBundle {
     @Override
     public Enumeration<String> getKeys() {
         return new IteratorEnumeration<String>(contents.keySet().iterator());
+    }
+
+    @Override
+    public boolean containsKey(String key){
+        return contents.containsKey(key);
+    }
+
+    @Override
+    public Set<String> keySet(){
+        return contents.keySet();
     }
 
     @Override
