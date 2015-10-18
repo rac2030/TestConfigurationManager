@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.racic.testing</groupId>
         <artifactId>test-configuration-manager-parent</artifactId>
-        <version>0.13.0-SNAPSHOT</version>
+        <version>0.13.0</version>
         <relativePath>..</relativePath>
     </parent>
     <name>Test Configuration Manager</name>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>ch.racic.testing</groupId>
             <artifactId>cm-config-for-unit-test</artifactId>
-            <version>0.13.0-SNAPSHOT</version>
+            <version>0.13.0</version>
             <scope>test</scope>
         </dependency>
 
