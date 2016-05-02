@@ -51,9 +51,7 @@ public class AggregatedResourceBundle extends ResourceBundle {
         Enumeration<String> keys = bundle.getKeys();
         while (keys.hasMoreElements()) {
             String oneKey = keys.nextElement();
-            if (!contents.containsKey(oneKey)) {
                 contents.put(oneKey, bundle.getObject(oneKey));
-            }
         }
     }
 
