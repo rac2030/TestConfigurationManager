@@ -40,7 +40,7 @@
         <dependency>
             <groupId>ch.racic.testing</groupId>
             <artifactId>cm-config-for-unit-test</artifactId>
-            <version>0.14.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
