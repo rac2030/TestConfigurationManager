@@ -13,6 +13,7 @@
             <class name="ch.racic.testing.cm.NoPropertiesTest"/>
             <class name="ch.racic.testing.cm.InsideJarPropertiesTest"/>
             <class name="ch.racic.testing.cm.AggregatedResourceBundleTest"/>
+            <class name="ch.racic.testing.cm.SystemPropertyTest"/>
         </classes>
     </test>
     <test name="With environment and locale">
@@ -25,6 +26,7 @@
             <class name="ch.racic.testing.cm.NoPropertiesTest"/>
             <class name="ch.racic.testing.cm.InsideJarPropertiesTest"/>
             <class name="ch.racic.testing.cm.AggregatedResourceBundleTest"/>
+            <class name="ch.racic.testing.cm.SystemPropertyTest"/>
         </classes>
     </test>
     <test name="With not existing environment">
@@ -36,6 +38,7 @@
             <class name="ch.racic.testing.cm.NoPropertiesTest"/>
             <class name="ch.racic.testing.cm.InsideJarPropertiesTest"/>
             <class name="ch.racic.testing.cm.AggregatedResourceBundleTest"/>
+            <class name="ch.racic.testing.cm.SystemPropertyTest"/>
         </classes>
     </test>
 </suite>

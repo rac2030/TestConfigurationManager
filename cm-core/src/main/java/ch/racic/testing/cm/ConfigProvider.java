@@ -238,6 +238,9 @@ public class ConfigProvider {
         } else if (propsGlobal != null && propsGlobal.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from Global properties");
             return propsGlobal.getString(key);
+        } else if (systemProperties != null && systemProperties.containsKey(key)) {
+            log.debug("Retrieved property [" + key + "] from System properties");
+            return systemProperties.getProperty(key);
         } else {
             log.warn("Property [" + key + "] has not been found, returning default value");
             return defaultValue;
@@ -273,6 +276,7 @@ public class ConfigProvider {
         if (propsGlobalClass != null && propsGlobalClass.containsKey(key)) return true;
         if (propsEnv != null && propsEnv.containsKey(key)) return true;
         if (propsGlobal != null && propsGlobal.containsKey(key)) return true;
+        if (systemProperties != null && systemProperties.containsKey(key)) return true;
         // 404 no property found
         return false;
     }
@@ -328,8 +332,17 @@ public class ConfigProvider {
         logProperties("Global class", propsGlobalClass);
         if (environment != null) logProperties("Environment " + environment, propsEnv);
         logProperties("Global", propsGlobal);
+        logProperties("System", systemProperties);
     }
-
+    
+    private void logProperties(String title, Properties systemProperties) {
+   	 if (systemProperties == null) return;
+        log.info("CM Properties available from " + title);        
+        for (Object key : systemProperties.keySet())
+            log.info("\tKey[" + key + "], Value[" + systemProperties.getProperty((String) key) + "]");
+		
+	}
+    
     private void logProperties(String title, AggregatedResourceBundle props) {
         if (props == null) return;
         log.info("CM Properties available from " + title);
