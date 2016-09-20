@@ -217,7 +217,10 @@ public class ConfigProvider {
             log.debug("Retrieved property [" + key + "] from parent config");
             return parentConfig.get(key);
         }
-        if (propsTestNG != null && propsTestNG.containsKey(key)) {
+        if (systemProperties != null && systemProperties.containsKey(key)) {
+            log.debug("Retrieved property [" + key + "] from System properties");
+            return systemProperties.getProperty(key);
+        } else if (propsTestNG != null && propsTestNG.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from TestNG Parameters");
             return propsTestNG.getString(key);
         } else if (propsOS != null && propsOS.containsKey(key)) {
@@ -238,9 +241,6 @@ public class ConfigProvider {
         } else if (propsGlobal != null && propsGlobal.containsKey(key)) {
             log.debug("Retrieved property [" + key + "] from Global properties");
             return propsGlobal.getString(key);
-        } else if (systemProperties != null && systemProperties.containsKey(key)) {
-            log.debug("Retrieved property [" + key + "] from System properties");
-            return systemProperties.getProperty(key);
         } else {
             log.warn("Property [" + key + "] has not been found, returning default value");
             return defaultValue;
@@ -269,6 +269,7 @@ public class ConfigProvider {
      */
     public boolean contains(String key) {
         if (parentConfig != null && parentConfig.contains(key)) return true;
+        if (systemProperties != null && systemProperties.containsKey(key)) return true;
         if (propsTestNG != null && propsTestNG.containsKey(key)) return true;
         if (propsOS != null && propsOS.containsKey(key)) return true;
         if (propsCustomClass != null && propsCustomClass.containsKey(key)) return true;
@@ -276,7 +277,6 @@ public class ConfigProvider {
         if (propsGlobalClass != null && propsGlobalClass.containsKey(key)) return true;
         if (propsEnv != null && propsEnv.containsKey(key)) return true;
         if (propsGlobal != null && propsGlobal.containsKey(key)) return true;
-        if (systemProperties != null && systemProperties.containsKey(key)) return true;
         // 404 no property found
         return false;
     }
@@ -334,14 +334,14 @@ public class ConfigProvider {
         logProperties("Global", propsGlobal);
         logProperties("System", systemProperties);
     }
-    
-    private void logProperties(String title, Properties systemProperties) {
-   	 if (systemProperties == null) return;
-        log.info("CM Properties available from " + title);        
-        for (Object key : systemProperties.keySet())
-            log.info("\tKey[" + key + "], Value[" + systemProperties.getProperty((String) key) + "]");
-		
-	}
+
+    private void logProperties(String title, Properties props) {
+        if (props == null) return;
+        log.info("CM Properties available from " + title);
+        for (Object key : props.keySet())
+            log.info("\tKey[" + key + "], Value[" + props.getProperty((String) key) + "]");
+
+    }
     
     private void logProperties(String title, AggregatedResourceBundle props) {
         if (props == null) return;
