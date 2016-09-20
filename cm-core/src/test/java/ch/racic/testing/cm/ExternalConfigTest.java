@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.ITestContext;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -32,15 +33,17 @@ public class ExternalConfigTest {
         log.entry(iTestContext);
         System.setProperty(ConfigProvider.CONFIG_BASE_FOLDER_SYSTEM_KEY, "externalconfig");
         cfg = new ConfigProvider(null, this.getClass());
-        System.clearProperty(ConfigProvider.CONFIG_BASE_FOLDER_SYSTEM_KEY);
     }
 
+    @AfterClass
+    public void tearDown() {
+        System.clearProperty(ConfigProvider.CONFIG_BASE_FOLDER_SYSTEM_KEY);
+    }
 
     @Test
     public void simpleTest() {
         cfg.logAvailableProperties();
         log.debug("Config loaded from: " + cfg.get("config.test.loadedfrom"));
-        Assert.assertEquals(cfg.CONFIG_BASE_FOLDER, "externalconfig", "base folder is set to the system property value");
         Assert.assertEquals(cfg.get("config.test.loadedfrom"), "externalconfig/global/test.properties", "config.test.loadedfrom gets loaded from externalconfig/global");
 
     }
