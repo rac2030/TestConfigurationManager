@@ -338,7 +338,7 @@ public class ConfigProvider {
     private void logProperties(String title, Properties props) {
         if (props == null) return;
         log.info("CM Properties available from " + title);
-        for (Object key : props.keySet())
+        for (String key : props.stringPropertyNames())
             log.info("\tKey[" + key + "], Value[" + props.getProperty((String) key) + "]");
 
     }
