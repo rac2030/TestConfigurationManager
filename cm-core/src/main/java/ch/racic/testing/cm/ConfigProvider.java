@@ -282,6 +282,31 @@ public class ConfigProvider {
     }
 
     /**
+     * Get all current runtime properties
+     *
+     * @return map with String keys and Object values
+     */
+    public Map<String, Object> getAll() {
+        Map<String, Object> ret = new HashMap<String, Object>();
+        if (propsGlobal != null) ret.putAll(propsGlobal.getMap());
+        if (propsEnv != null) ret.putAll(propsEnv.getMap());
+        if (propsGlobalClass != null) ret.putAll(propsGlobalClass.getMap());
+        if (propsEnvClass != null) ret.putAll(propsEnvClass.getMap());
+        if (propsCustomClass != null) ret.putAll(propsCustomClass.getMap());
+        if (propsOS != null) ret.putAll(propsOS.getMap());
+        if (propsTestNG != null) ret.putAll(propsTestNG.getMap());
+        //TODO go trough all and create a HashMap
+        if (systemProperties != null) {
+            for (Map.Entry<Object, Object> entry : systemProperties.entrySet()) {
+                ret.put((String) entry.getKey(), entry.getValue());
+            }
+        }
+        if (parentConfig != null) ret.putAll(parentConfig.getAll());
+
+        return ret;
+    }
+
+    /**
      * Loads a special class properties file which overrides all the layers except the TestNG and OS parameter layer.
      *
      * @param custom Properties object
@@ -342,7 +367,7 @@ public class ConfigProvider {
             log.info("\tKey[" + key + "], Value[" + props.getProperty((String) key) + "]");
 
     }
-    
+
     private void logProperties(String title, AggregatedResourceBundle props) {
         if (props == null) return;
         log.info("CM Properties available from " + title);
@@ -446,5 +471,36 @@ public class ConfigProvider {
         mList.add(new ConfigModule(this, environment, type, propsTestNG));
         Injector injector = com.google.inject.Guice.createInjector(mList);
         return injector.getInstance(type);
+    }
+
+    /**
+     * Returns a map of properties as String that have a matching prefix. It accept empty String and will just return
+     * all without filtering.
+     *
+     * @param prefix
+     * @return map of String properties
+     */
+    public Map<String, String> getStringWithPrefix(String prefix) {
+        Map<String, String> ret = new HashMap<String, String>();
+        for (Map.Entry<String, Object> entry : getAll().entrySet()) {
+            if (prefix.isEmpty() || entry.getKey().startsWith(prefix))
+                ret.put(entry.getKey(), (String) entry.getValue());
+        }
+        return ret;
+    }
+
+    /**
+     * Returns a map of properties as String that have a matching prefix. It will trim away the prefix from the keys.
+     *
+     * @param prefix
+     * @return map of String properties
+     */
+    public Map<String, String> getStringWithPrefixTrim(String prefix) {
+        Map<String, String> ret = new HashMap<String, String>();
+        for (Map.Entry<String, Object> entry : getAll().entrySet()) {
+            if (prefix.isEmpty() || entry.getKey().startsWith(prefix))
+                ret.put(entry.getKey().replaceFirst(prefix, ""), (String) entry.getValue());
+        }
+        return ret;
     }
 }

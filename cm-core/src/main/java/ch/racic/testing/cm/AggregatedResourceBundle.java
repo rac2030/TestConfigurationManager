@@ -70,6 +70,15 @@ public class AggregatedResourceBundle extends ResourceBundle {
         return contents.keySet();
     }
 
+    /**
+     * Get the full map of properties
+     *
+     * @return
+     */
+    public Map<String, Object> getMap() {
+        return contents;
+    }
+
     @Override
     protected Object handleGetObject(String key) {
         return contents.get(key);
