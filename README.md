@@ -5,7 +5,7 @@ A configuration manager tailored for functional testing with TestNG.
 <dependency>
   <groupId>ch.racic.testing</groupId>
   <artifactId>test-configuration-manager</artifactId>
-  <version>0.15.0</version>
+  <version>0.16.0</version>
 </dependency>
 ```
 
@@ -17,6 +17,6 @@ Note that this part is not completely finished and has no unit tests yet, hence 
 <dependency>
   <groupId>ch.racic.testing</groupId>
   <artifactId>cm-maven-plugin</artifactId>
-  <version>0.15.0</version>
+  <version>0.16.0</version>
 </dependency>
 ```
