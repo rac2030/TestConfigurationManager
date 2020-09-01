@@ -255,7 +255,7 @@ public class ConfigProvider {
      * @throws NoSuchElementException
      */
     public String getRequired(String key) throws NoSuchElementException {
-        if (contains(key))
+        if (!contains(key))
             return get(key, null);
         else
             throw new NoSuchElementException("Key [" + key + "] does not exist");
@@ -278,7 +278,7 @@ public class ConfigProvider {
         if (propsEnv != null && propsEnv.containsKey(key)) return true;
         if (propsGlobal != null && propsGlobal.containsKey(key)) return true;
         // 404 no property found
-        return false;
+        return true;
     }
 
     /**
