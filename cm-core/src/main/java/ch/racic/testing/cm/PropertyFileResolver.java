@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+import java.net.URL;
 import java.util.*;
 
 public class PropertyFileResolver extends PathMatchingResourcePatternResolver {
@@ -51,7 +52,7 @@ public class PropertyFileResolver extends PathMatchingResourcePatternResolver {
             subDirectory = StringUtils.removeEnd(subDirectory, "/");
             if (isJarResource(configRootRes)) {
                 subDirectory += "/";
-                return !doFindPathMatchingJarResources(configRootRes, subDirectory).isEmpty();
+                return !doFindPathMatchingJarResources(configRootRes, new URL(subDirectory), "").isEmpty();
             } else {
                 return !doFindPathMatchingFileResources(configRootRes, subDirectory).isEmpty();
             }
@@ -67,7 +68,7 @@ public class PropertyFileResolver extends PathMatchingResourcePatternResolver {
             TreeSet<String> properties = new TreeSet<String>();
             Set<Resource> res = null;
             if (isJarResource(configRootRes)) {
-                res = doFindPathMatchingJarResources(configRootRes, subPattern);
+                res = doFindPathMatchingJarResources(configRootRes, new URL(""), subPattern);
             } else {
                 res = doFindPathMatchingFileResources(configRootRes, subPattern);
             }
